@@ -8,9 +8,9 @@ const KORP_CONFIG = {
   // ── API ────────────────────────────────────────────────────────────
   api: {
     authUrl:      'https://api.korp.com.br/oauth/connect/token',
-    graphqlUrl:   'https://api.korp.com.br/bi/v/graphql',
-    clientId:     'BAAFE--D-E-FFDE',
-    clientSecret: 'wMXoUkwMmEYphznsTWjOVOQym',
+    graphqlUrl:   'https://api.korp.com.br/bi/v1/graphql',   // v1 (atualizado)
+    clientId:     'DC14AF06-7E0C-4172-B963-B2F69E3A307B',
+    clientSecret: 'P62CRMeZQwUSn1sqvv7AAbAgf4ewVSvK',
     grantType:    'client_credentials',
   },
 
