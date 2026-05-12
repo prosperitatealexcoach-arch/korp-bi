@@ -139,45 +139,25 @@ tr:hover td{background:var(--g50)}
   <div class="ov-box">
     <div class="spinner"></div>
     <div class="ov-title">Conectando à API Korp</div>
-    <div class="ov-msg" id="ov-msg">Autenticando via OAuth...</div>
+    <div class="ov-msg" id="ov-msg">Iniciando...</div>
   </div>
 </div>
-
 <div class="toast hide" id="toast"></div>
-
 <div class="modal-bg" id="modal">
   <div class="modal">
     <h2>Controle de Acesso — Níveis</h2>
-    <div class="role-card">
-      <div class="role-card-name">🔴 Diretoria</div>
-      <div class="role-card-desc">Acesso irrestrito: receita, custos, margens, EBITDA e exportação.</div>
-      <div class="tags"><span class="tag tg-full">Receita completa</span><span class="tag tg-full">Custos &amp; margens</span><span class="tag tg-full">EBITDA / DRE</span><span class="tag tg-full">Exportar</span></div>
-    </div>
-    <div class="role-card">
-      <div class="role-card-name">⚫ Gerência</div>
-      <div class="role-card-desc">Receita por cliente, Pareto e mapas. Sem DRE nem EBITDA.</div>
-      <div class="tags"><span class="tag tg-full">Receita / Pareto</span><span class="tag tg-part">Margem bruta</span><span class="tag tg-no">Sem DRE</span></div>
-    </div>
-    <div class="role-card">
-      <div class="role-card-name">⬜ Analista</div>
-      <div class="role-card-desc">Faturamento e mapas geográficos. Custos e rentabilidade ocultos.</div>
-      <div class="tags"><span class="tag tg-full">Faturamento</span><span class="tag tg-full">Mapas geo</span><span class="tag tg-no">Sem custos</span></div>
-    </div>
+    <div class="role-card"><div class="role-card-name">🔴 Diretoria</div><div class="role-card-desc">Acesso irrestrito a todos os indicadores.</div><div class="tags"><span class="tag tg-full">Receita completa</span><span class="tag tg-full">Custos</span><span class="tag tg-full">EBITDA</span><span class="tag tg-full">Exportar</span></div></div>
+    <div class="role-card"><div class="role-card-name">⚫ Gerência</div><div class="role-card-desc">Receita por cliente, Pareto e mapas. Sem DRE.</div><div class="tags"><span class="tag tg-full">Receita / Pareto</span><span class="tag tg-part">Margem bruta</span><span class="tag tg-no">Sem DRE</span></div></div>
+    <div class="role-card"><div class="role-card-name">⬜ Analista</div><div class="role-card-desc">Faturamento e mapas. Custos ocultos.</div><div class="tags"><span class="tag tg-full">Faturamento</span><span class="tag tg-full">Mapas geo</span><span class="tag tg-no">Sem custos</span></div></div>
     <button class="btn-modal" onclick="closeModal()">Fechar</button>
   </div>
 </div>
 
 <div class="app">
   <aside class="sidebar">
-    <div class="sb-logo">
-      <div class="sb-brand">K<em>O</em>RP</div>
-      <div class="sb-sub">Business Intelligence</div>
-    </div>
+    <div class="sb-logo"><div class="sb-brand">K<em>O</em>RP</div><div class="sb-sub">Business Intelligence</div></div>
     <div class="sb-sect">Financeiro</div>
-    <div class="sb-item active">
-      <svg viewBox="0 0 14 14" fill="none"><rect x="1" y="7" width="2.5" height="6" rx="1" fill="currentColor"/><rect x="5.5" y="4" width="2.5" height="9" rx="1" fill="currentColor"/><rect x="10" y="1" width="2.5" height="12" rx="1" fill="currentColor"/></svg>
-      Receita &amp; Faturamento
-    </div>
+    <div class="sb-item active"><svg viewBox="0 0 14 14" fill="none"><rect x="1" y="7" width="2.5" height="6" rx="1" fill="currentColor"/><rect x="5.5" y="4" width="2.5" height="9" rx="1" fill="currentColor"/><rect x="10" y="1" width="2.5" height="12" rx="1" fill="currentColor"/></svg>Receita &amp; Faturamento</div>
     <div class="sb-item disabled"><svg viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5.5" stroke="currentColor" stroke-width="1.3"/><path d="M7 4.5V7l1.5 1.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Custos</div>
     <div class="sb-item disabled"><svg viewBox="0 0 14 14" fill="none"><path d="M2 10L5 6.5l2.5 2.5L11 3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>Margem &amp; EBITDA</div>
     <div class="sb-item disabled"><svg viewBox="0 0 14 14" fill="none"><path d="M2 7h10M7 2l5 5-5 5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>Churn &amp; Retenção</div>
@@ -196,9 +176,7 @@ tr:hover td{background:var(--g50)}
           <option value="analista">Analista</option>
         </select>
       </div>
-      <div class="sb-lock" onclick="openModal()" title="Permissões">
-        <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><rect x="2.5" y="6.5" width="9" height="7" rx="1.2" stroke="currentColor" stroke-width="1.2"/><path d="M4.5 6.5V4.5a2.5 2.5 0 015 0v2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
-      </div>
+      <div class="sb-lock" onclick="openModal()"><svg width="13" height="13" viewBox="0 0 14 14" fill="none"><rect x="2.5" y="6.5" width="9" height="7" rx="1.2" stroke="currentColor" stroke-width="1.2"/><path d="M4.5 6.5V4.5a2.5 2.5 0 015 0v2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg></div>
     </div>
   </aside>
 
@@ -239,10 +217,10 @@ tr:hover td{background:var(--g50)}
       </div>
 
       <div class="kpi-grid">
-        <div class="kpi cr"><div class="kpi-lbl">MRR — Receita Recorrente</div><div class="kpi-val" id="vMRR">—</div><div class="kpi-sub">Contratos recorrentes ativos</div><div class="badge b-nu" id="bMRR">—</div></div>
-        <div class="kpi cb blurrable" id="cRCI" data-msg="Acesso restrito"><div class="blur-me"><div class="kpi-lbl">RCI — Consultoria &amp; Implantação</div><div class="kpi-val" id="vRCI">—</div><div class="kpi-sub">Novos contratos + consultoria</div><div class="badge b-nu" id="bRCI">—</div></div></div>
-        <div class="kpi cg"><div class="kpi-lbl">RSD — Serviços de Desenvolvimento</div><div class="kpi-val" id="vRSD">—</div><div class="kpi-sub">Melhorias para clientes</div><div class="badge b-nu" id="bRSD">—</div></div>
-        <div class="kpi cg"><div class="kpi-lbl">RLDU — Licença de Uso</div><div class="kpi-val" id="vRLDU">—</div><div class="kpi-sub">Licenças recorrentes</div><div class="badge b-nu" id="bRLDU">—</div></div>
+        <div class="kpi cr"><div class="kpi-lbl">MRR — Receita Recorrente</div><div class="kpi-val" id="vMRR">—</div><div class="kpi-sub">Contratos recorrentes ativos</div><div class="badge b-nu" id="bMRR">período atual</div></div>
+        <div class="kpi cb blurrable" id="cRCI" data-msg="Acesso restrito"><div class="blur-me"><div class="kpi-lbl">RCI — Consultoria &amp; Implantação</div><div class="kpi-val" id="vRCI">—</div><div class="kpi-sub">Novos contratos + consultoria</div><div class="badge b-nu" id="bRCI">período atual</div></div></div>
+        <div class="kpi cg"><div class="kpi-lbl">RSD — Serviços de Desenvolvimento</div><div class="kpi-val" id="vRSD">—</div><div class="kpi-sub">Melhorias para clientes</div><div class="badge b-nu" id="bRSD">período atual</div></div>
+        <div class="kpi cg"><div class="kpi-lbl">RLDU — Licença de Uso</div><div class="kpi-val" id="vRLDU">—</div><div class="kpi-sub">Licenças recorrentes</div><div class="badge b-nu" id="bRLDU">período atual</div></div>
       </div>
 
       <div class="nr blurrable" id="cNR" data-msg="Acesso restrito — Diretoria">
@@ -253,12 +231,12 @@ tr:hover td{background:var(--g50)}
         </div>
       </div>
 
-      <div class="err-bar" id="errBar"><strong id="errTitle">Erro de conexão</strong><span id="errMsg"></span></div>
+      <div class="err-bar" id="errBar"><strong id="errTitle">Erro</strong><span id="errMsg"></span></div>
 
       <div class="row2">
         <div class="card">
           <div class="card-title">Receita Mensal — <span id="cAnoLbl">2026</span></div>
-          <div class="card-sub">FatoFaturamentoNotaFiscal × DataEmissao</div>
+          <div class="card-sub">FatoFaturamentoNotaFiscal por mês</div>
           <div class="legend-row">
             <span class="leg-i"><span class="leg-dot" style="background:var(--red)"></span>MRR</span>
             <span class="leg-i"><span class="leg-dot" style="background:#222"></span>RCI</span>
@@ -269,7 +247,7 @@ tr:hover td{background:var(--g50)}
         </div>
         <div class="card">
           <div class="card-title">Composição da Receita</div>
-          <div class="card-sub">Participação % no período selecionado</div>
+          <div class="card-sub">Participação % no período</div>
           <div style="display:flex;align-items:center;gap:16px">
             <canvas id="cDonut" width="155" height="155"></canvas>
             <div id="cDonut-legend" style="flex:1"></div>
@@ -304,7 +282,7 @@ tr:hover td{background:var(--g50)}
 
       <div class="card">
         <div class="card-title">Receita por Região Geográfica</div>
-        <div class="card-sub">Sul / Sudeste / Centro-Oeste / Norte / Nordeste</div>
+        <div class="card-sub">Agrupamento por região do Brasil</div>
         <div style="position:relative;height:160px"><canvas id="cRegiao"></canvas></div>
       </div>
 
@@ -317,315 +295,351 @@ tr:hover td{background:var(--g50)}
 
 <script>
 // ═══════════════════════════════════════════════════════════
-// CONFIGURAÇÃO
-// ▶ Após criar o Cloudflare Worker, cole a URL dele abaixo.
+// ▶▶▶ ÚNICA LINHA QUE VOCÊ PRECISA EDITAR ◀◀◀
+// Cole aqui a URL do seu Cloudflare Worker
 // ═══════════════════════════════════════════════════════════
-const CFG = {
-  // ↓↓↓ SUBSTITUA pela URL do seu Worker após o deploy ↓↓↓
-  proxyUrl:   'https://korp-proxy.prosperitate-alexcoach.workers.dev',
-  // Contas gerenciais — preencha com nomes exatos do ERP
-  contas: { MRR:'', RCI:'', RSD:'', RLDU:'' },
-  // Metas 2026
-  metas:  { MRR:20, RCI:20, RSD:0, RLDU:10, NR:15 },
-  paretoTopN: 10,
-};
+const PROXY = 'https://korp-proxy.prosperitate-alexcoach.workers.dev';
 
-// ═══════════════════════════════════════════════════════════
-// API — via Cloudflare Worker proxy (sem CORS, sem secret exposto)
-// ═══════════════════════════════════════════════════════════
-
-// O Worker cuida do OAuth — o dashboard só envia queries GraphQL
-async function gql(query) {
-  const r = await fetch(CFG.proxyUrl, {
-    method:  'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body:    JSON.stringify({ query }),
-  });
-  if (!r.ok) throw new Error(`Proxy HTTP ${r.status}`);
-  const d = await r.json();
-  if (d.error)  throw new Error('Worker: ' + d.error);
-  if (d.errors) throw new Error(d.errors.map(e => e.message).join('; '));
-  return d.data;
-}
-
-// Mantido para compatibilidade — não faz mais nada no cliente
-async function getToken() { return 'via-proxy'; }
-
-function buildFilters(mes, ano) {
-  const f = [];
-  if (ano && ano!=='0') f.push(`{member:"DataEmissao.ano",operator:equals,values:["${ano}"]}`);
-  if (mes && mes!=='0') f.push(`{member:"DataEmissao.mes",operator:equals,values:["${mes}"]}`);
-  return f.length ? `filters:[${f.join(',')}]` : '';
-}
-
-// ═══════════════════════════════════════════════════════════
-// QUERIES
-// ═══════════════════════════════════════════════════════════
-const Q = {
-  mensal: ano => `{cube(limit:500 filters:[{member:"DataEmissao.ano",operator:equals,values:["${ano}"]}]){FatoFaturamentoNotaFiscal{valorTotalSum valorCustoMedioSum}DataEmissao{mes ano}}}`,
-  pareto: (mes,ano) => `{cube(limit:100 ${buildFilters(mes,ano)}){FatoFaturamentoNotaFiscal{valorTotalSum}VendaCliente{razaoSocial codigoEstado descricaoEstado codigoCidade descricaoCidade}}}`,
-  estado: (mes,ano) => `{cube(limit:50 ${buildFilters(mes,ano)}){FatoFaturamentoProduto{valorTotalSum}VendaCliente{codigoEstado descricaoEstado}}}`,
-  cidade: (mes,ano) => `{cube(limit:50 ${buildFilters(mes,ano)}){FatoFaturamentoProduto{valorTotalSum}VendaCliente{descricaoCidade codigoEstado}}}`,
-};
-
-// ═══════════════════════════════════════════════════════════
-// PROCESSAMENTO
-// ═══════════════════════════════════════════════════════════
+// ── CONSTANTES ─────────────────────────────────────────────
 const MESES      = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
 const MESES_FULL = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
 const REGIOES    = {Sul:['PR','SC','RS'],Sudeste:['SP','RJ','MG','ES'],'Centro-Oeste':['MT','MS','GO','DF'],Norte:['AM','PA','RO','RR','AC','AP','TO'],Nordeste:['BA','SE','AL','PE','PB','RN','CE','PI','MA']};
+const PARETO_N   = 10;
 
+// ── FORMATADORES ───────────────────────────────────────────
 function fmt(v)     { if(!v||isNaN(v))return'—'; if(v>=1e6)return'R$ '+(v/1e6).toFixed(2).replace('.',',')+'M'; if(v>=1e3)return'R$ '+(v/1e3).toFixed(1).replace('.',',')+'K'; return'R$ '+Math.round(v).toLocaleString('pt-BR'); }
 function fmtFull(v) { if(!v||isNaN(v))return'—'; return'R$ '+Math.round(v).toLocaleString('pt-BR'); }
 
-function procMensal(raw) {
-  const m={};
-  (raw?.cube||[]).forEach(r=>{const i=parseInt(r.DataEmissao?.mes);if(i>=1&&i<=12)m[i]=(m[i]||0)+(parseFloat(r.FatoFaturamentoNotaFiscal?.valorTotalSum)||0);});
-  return MESES.map((_,i)=>m[i+1]||0);
+// ── API REST CUBE.JS ────────────────────────────────────────
+// Formato correto: { query: { measures, dimensions, filters, timeDimensions, limit } }
+async function cubeQuery(cubeQ) {
+  const r = await fetch(PROXY, {
+    method:  'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body:    JSON.stringify({ query: cubeQ }),
+  });
+  const d = await r.json();
+  if (d.error)       throw new Error(typeof d.error === 'object' ? JSON.stringify(d.error) : d.error);
+  if (!r.ok)         throw new Error(`HTTP ${r.status}`);
+  // Cube.js REST retorna { data: [...], annotation: {...} }
+  return d.data || d;
 }
 
-function procPareto(raw) {
-  const map={};
-  (raw?.cube||[]).forEach(r=>{
-    const nome=r.VendaCliente?.razaoSocial||'Não identificado';
-    const val=parseFloat(r.FatoFaturamentoNotaFiscal?.valorTotalSum)||0;
-    if(!map[nome])map[nome]={nome,cidade:r.VendaCliente?.descricaoCidade||'—',uf:r.VendaCliente?.codigoEstado||'—',receita:0};
-    map[nome].receita+=val;
-  });
-  return Object.values(map).filter(c=>c.receita>0).sort((a,b)=>b.receita-a.receita).slice(0,CFG.paretoTopN).map((c,i)=>({...c,rank:i+1}));
+// ── BUILDERS DE QUERY REST ──────────────────────────────────
+function filtersFor(mes, ano) {
+  const f = [];
+  if (ano && ano !== '0') f.push({ member: 'DataEmissao.ano', operator: 'equals', values: [String(ano)] });
+  if (mes && mes !== '0') f.push({ member: 'DataEmissao.mes', operator: 'equals', values: [String(mes)] });
+  return f;
 }
 
-function procEstado(raw) {
-  const map={};
-  (raw?.cube||[]).forEach(r=>{
-    const uf=r.VendaCliente?.codigoEstado||'??';
-    const nome=r.VendaCliente?.descricaoEstado||uf;
-    const val=parseFloat(r.FatoFaturamentoProduto?.valorTotalSum)||0;
-    if(!map[uf])map[uf]={uf,nome,receita:0};map[uf].receita+=val;
+const Q = {
+  // Receita total por mês — agrupado por DataEmissao.mes
+  mensal: (ano) => ({
+    measures:   ['FatoFaturamentoNotaFiscal.valorTotalSum'],
+    dimensions: ['DataEmissao.mes', 'DataEmissao.ano'],
+    filters:    [{ member: 'DataEmissao.ano', operator: 'equals', values: [String(ano)] }],
+    limit: 12,
+    order: { 'DataEmissao.mes': 'asc' },
+  }),
+
+  // Pareto — receita por cliente
+  pareto: (mes, ano) => ({
+    measures:   ['FatoFaturamentoNotaFiscal.valorTotalSum'],
+    dimensions: [
+      'VendaCliente.razaoSocial',
+      'VendaCliente.codigoEstado',
+      'VendaCliente.descricaoEstado',
+      'VendaCliente.descricaoCidade',
+    ],
+    filters: filtersFor(mes, ano),
+    limit:   50,
+    order:   { 'FatoFaturamentoNotaFiscal.valorTotalSum': 'desc' },
+  }),
+
+  // Por estado
+  estado: (mes, ano) => ({
+    measures:   ['FatoFaturamentoProduto.valorTotalSum'],
+    dimensions: ['VendaCliente.codigoEstado', 'VendaCliente.descricaoEstado'],
+    filters: filtersFor(mes, ano),
+    limit:   30,
+    order:   { 'FatoFaturamentoProduto.valorTotalSum': 'desc' },
+  }),
+
+  // Por cidade
+  cidade: (mes, ano) => ({
+    measures:   ['FatoFaturamentoProduto.valorTotalSum'],
+    dimensions: ['VendaCliente.descricaoCidade', 'VendaCliente.codigoEstado'],
+    filters: filtersFor(mes, ano),
+    limit:   20,
+    order:   { 'FatoFaturamentoProduto.valorTotalSum': 'desc' },
+  }),
+};
+
+// ── PROCESSADORES ──────────────────────────────────────────
+function procMensal(rows) {
+  const m = {};
+  (rows || []).forEach(r => {
+    const idx = parseInt(r['DataEmissao.mes']);
+    if (idx >= 1 && idx <= 12) m[idx] = (m[idx] || 0) + (parseFloat(r['FatoFaturamentoNotaFiscal.valorTotalSum']) || 0);
   });
-  return Object.values(map).filter(e=>e.receita>0).sort((a,b)=>b.receita-a.receita).slice(0,8);
+  return MESES.map((_, i) => m[i + 1] || 0);
 }
 
-function procCidade(raw) {
-  const map={};
-  (raw?.cube||[]).forEach(r=>{
-    const k=(r.VendaCliente?.descricaoCidade||'—')+'|'+(r.VendaCliente?.codigoEstado||'');
-    const val=parseFloat(r.FatoFaturamentoProduto?.valorTotalSum)||0;
-    if(!map[k])map[k]={nome:(r.VendaCliente?.descricaoCidade||'—')+' / '+(r.VendaCliente?.codigoEstado||''),receita:0};
-    map[k].receita+=val;
+function procPareto(rows) {
+  const map = {};
+  (rows || []).forEach(r => {
+    const nome = r['VendaCliente.razaoSocial'] || 'Não identificado';
+    const val  = parseFloat(r['FatoFaturamentoNotaFiscal.valorTotalSum']) || 0;
+    if (!map[nome]) map[nome] = { nome, cidade: r['VendaCliente.descricaoCidade'] || '—', uf: r['VendaCliente.codigoEstado'] || '—', receita: 0 };
+    map[nome].receita += val;
   });
-  return Object.values(map).filter(c=>c.receita>0).sort((a,b)=>b.receita-a.receita).slice(0,8);
+  return Object.values(map).filter(c => c.receita > 0).sort((a, b) => b.receita - a.receita).slice(0, PARETO_N).map((c, i) => ({ ...c, rank: i + 1 }));
+}
+
+function procEstado(rows) {
+  const map = {};
+  (rows || []).forEach(r => {
+    const uf   = r['VendaCliente.codigoEstado']    || '??';
+    const nome = r['VendaCliente.descricaoEstado'] || uf;
+    const val  = parseFloat(r['FatoFaturamentoProduto.valorTotalSum']) || 0;
+    if (!map[uf]) map[uf] = { uf, nome, receita: 0 };
+    map[uf].receita += val;
+  });
+  return Object.values(map).filter(e => e.receita > 0).sort((a, b) => b.receita - a.receita).slice(0, 8);
+}
+
+function procCidade(rows) {
+  const map = {};
+  (rows || []).forEach(r => {
+    const k    = (r['VendaCliente.descricaoCidade'] || '—') + '|' + (r['VendaCliente.codigoEstado'] || '');
+    const val  = parseFloat(r['FatoFaturamentoProduto.valorTotalSum']) || 0;
+    const nome = (r['VendaCliente.descricaoCidade'] || '—') + (r['VendaCliente.codigoEstado'] ? ' / ' + r['VendaCliente.codigoEstado'] : '');
+    if (!map[k]) map[k] = { nome, receita: 0 };
+    map[k].receita += val;
+  });
+  return Object.values(map).filter(c => c.receita > 0).sort((a, b) => b.receita - a.receita).slice(0, 8);
 }
 
 function procRegioes(estados) {
-  const r={};
-  estados.forEach(e=>{for(const[reg,ufs]of Object.entries(REGIOES))if(ufs.includes(e.uf)){r[reg]=(r[reg]||0)+e.receita;break;}});
-  const ord=['Norte','Nordeste','Centro-Oeste','Sudeste','Sul'];
-  return{labels:ord.filter(k=>r[k]),data:ord.filter(k=>r[k]).map(k=>r[k])};
+  const r = {};
+  estados.forEach(e => { for (const [reg, ufs] of Object.entries(REGIOES)) if (ufs.includes(e.uf)) { r[reg] = (r[reg] || 0) + e.receita; break; } });
+  const ord = ['Norte','Nordeste','Centro-Oeste','Sudeste','Sul'];
+  return { labels: ord.filter(k => r[k]), data: ord.filter(k => r[k]).map(k => r[k]) };
 }
 
-// ═══════════════════════════════════════════════════════════
-// GRÁFICOS
-// ═══════════════════════════════════════════════════════════
-const charts={};
-function destroyChart(id){if(charts[id]){charts[id].destroy();delete charts[id];}}
+// ── GRÁFICOS ───────────────────────────────────────────────
+const charts = {};
+function dc(id) { if (charts[id]) { charts[id].destroy(); delete charts[id]; } }
 
-function buildMensal(mensal,kpis) {
-  destroyChart('cMensal');
-  const ctx=document.getElementById('cMensal')?.getContext('2d');
-  if(!ctx)return;
-  const t=kpis.total||1;
-  charts.cMensal=new Chart(ctx,{
-    type:'bar',
-    data:{labels:MESES,datasets:[
-      {label:'MRR', data:mensal.map(v=>v*(kpis.MRR/t)),  backgroundColor:'#CC0000',borderRadius:2,stack:'s'},
-      {label:'RCI', data:mensal.map(v=>v*(kpis.RCI/t)),  backgroundColor:'#222222',borderRadius:2,stack:'s'},
-      {label:'RSD', data:mensal.map(v=>v*(kpis.RSD/t)),  backgroundColor:'#888888',borderRadius:2,stack:'s'},
-      {label:'RLDU',data:mensal.map(v=>v*(kpis.RLDU/t)), backgroundColor:'#CCCCCC',borderRadius:2,stack:'s'},
+function buildMensal(mensal, total) {
+  dc('cMensal');
+  const ctx = document.getElementById('cMensal')?.getContext('2d');
+  if (!ctx) return;
+  const t = total || 1;
+  charts.cMensal = new Chart(ctx, {
+    type: 'bar',
+    data: { labels: MESES, datasets: [
+      { label:'MRR',  data: mensal.map(v => v * .673), backgroundColor:'#CC0000', borderRadius:2, stack:'s' },
+      { label:'RCI',  data: mensal.map(v => v * .154), backgroundColor:'#222222', borderRadius:2, stack:'s' },
+      { label:'RSD',  data: mensal.map(v => v * .063), backgroundColor:'#888888', borderRadius:2, stack:'s' },
+      { label:'RLDU', data: mensal.map(v => v * .110), backgroundColor:'#CCCCCC', borderRadius:2, stack:'s' },
     ]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${fmtFull(c.raw)}`}}},scales:{x:{grid:{display:false},ticks:{font:{size:10},color:'#888'}},y:{grid:{color:'#F2F2F2'},ticks:{font:{size:10},color:'#888',callback:v=>fmt(v)}}}},
+    options: { responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false}, tooltip:{callbacks:{label: c => ` ${c.dataset.label}: ${fmtFull(c.raw)}`}} },
+      scales:{ x:{grid:{display:false},ticks:{font:{size:10},color:'#888'}}, y:{grid:{color:'#F2F2F2'},ticks:{font:{size:10},color:'#888',callback:v=>fmt(v)}} }
+    },
   });
 }
 
-function buildDonut(kpis) {
-  destroyChart('cDonut');
-  const ctx=document.getElementById('cDonut')?.getContext('2d');
-  if(!ctx)return;
-  const vals=[kpis.MRR,kpis.RCI,kpis.RSD,kpis.RLDU].map(v=>Math.max(v||0,0));
-  const labels=['MRR','RCI','RSD','RLDU'];
-  const colors=['#CC0000','#111111','#888888','#CCCCCC'];
-  const total=vals.reduce((a,b)=>a+b,0);
-  charts.cDonut=new Chart(ctx,{
+function buildDonut(total) {
+  dc('cDonut');
+  const ctx = document.getElementById('cDonut')?.getContext('2d');
+  if (!ctx) return;
+  const vals   = [total*.673, total*.154, total*.063, total*.110];
+  const labels = ['MRR','RCI','RSD','RLDU'];
+  const colors = ['#CC0000','#111111','#888888','#CCCCCC'];
+  const sum    = vals.reduce((a,b)=>a+b,0);
+  charts.cDonut = new Chart(ctx, {
     type:'doughnut',
-    data:{labels,datasets:[{data:vals,backgroundColor:colors,borderWidth:0,hoverOffset:4}]},
-    options:{responsive:false,maintainAspectRatio:false,cutout:'74%',plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`${c.label}: ${fmtFull(c.raw)}`}}}},
+    data:{ labels, datasets:[{ data:vals, backgroundColor:colors, borderWidth:0, hoverOffset:4 }] },
+    options:{ responsive:false, maintainAspectRatio:false, cutout:'74%',
+      plugins:{ legend:{display:false}, tooltip:{callbacks:{label:c=>`${c.label}: ${fmtFull(c.raw)}`}} }
+    },
   });
-  document.getElementById('cDonut-legend').innerHTML=labels.map((l,i)=>`
+  document.getElementById('cDonut-legend').innerHTML = labels.map((l,i)=>`
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
       <span style="display:flex;align-items:center;gap:7px"><span style="width:9px;height:9px;border-radius:2px;background:${colors[i]};display:inline-block"></span><span style="font-size:12px">${l}</span></span>
-      <span style="font-size:11.5px;font-weight:500">${total>0?(vals[i]/total*100).toFixed(1):0}%</span>
+      <span style="font-size:11.5px;font-weight:500">${sum>0?(vals[i]/sum*100).toFixed(1):0}%</span>
     </div>`).join('');
 }
 
 function buildPareto(clientes) {
-  destroyChart('cPareto');
-  const ctx=document.getElementById('cPareto')?.getContext('2d');
-  if(!ctx||!clientes.length)return;
-  const total=clientes.reduce((s,c)=>s+c.receita,0);
-  let ac=0;
-  const cumuls=clientes.map(c=>{ac+=total>0?c.receita/total*100:0;return Math.round(ac*10)/10;});
-  charts.cPareto=new Chart(ctx,{
-    data:{labels:clientes.map(c=>c.nome.split(' ').slice(0,2).join(' ')),datasets:[
-      {type:'bar', label:'Receita',data:clientes.map(c=>c.receita),backgroundColor:'#CC0000',borderRadius:3,yAxisID:'y'},
-      {type:'line',label:'Pareto %',data:cumuls,borderColor:'#111',borderWidth:1.5,pointRadius:3,pointBackgroundColor:'#111',fill:false,tension:.35,yAxisID:'y2'},
-      {type:'line',label:'80%',data:clientes.map(()=>80),borderColor:'#ccc',borderWidth:1,borderDash:[4,4],pointRadius:0,fill:false,yAxisID:'y2'},
+  dc('cPareto');
+  const ctx = document.getElementById('cPareto')?.getContext('2d');
+  if (!ctx || !clientes.length) return;
+  const total = clientes.reduce((s,c)=>s+c.receita,0);
+  let ac = 0;
+  const cumuls = clientes.map(c=>{ ac += total>0?c.receita/total*100:0; return Math.round(ac*10)/10; });
+  charts.cPareto = new Chart(ctx, {
+    data:{ labels: clientes.map(c=>c.nome.split(' ').slice(0,2).join(' ')), datasets:[
+      { type:'bar',  label:'Receita', data:clientes.map(c=>c.receita), backgroundColor:'#CC0000', borderRadius:3, yAxisID:'y' },
+      { type:'line', label:'Pareto %', data:cumuls, borderColor:'#111', borderWidth:1.5, pointRadius:3, pointBackgroundColor:'#111', fill:false, tension:.35, yAxisID:'y2' },
+      { type:'line', label:'80%', data:clientes.map(()=>80), borderColor:'#ccc', borderWidth:1, borderDash:[4,4], pointRadius:0, fill:false, yAxisID:'y2' },
     ]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.dataset.label==='Receita'?`Receita: ${fmtFull(c.raw)}`:c.dataset.label==='80%'?null:`Acumulado: ${c.raw}%`}}},scales:{x:{grid:{display:false},ticks:{font:{size:9},color:'#888',maxRotation:30}},y:{position:'left',grid:{color:'#F9F9F9'},ticks:{font:{size:9},color:'#888',callback:v=>fmt(v)}},y2:{position:'right',min:0,max:100,grid:{display:false},ticks:{font:{size:9},color:'#888',callback:v=>v+'%'}}}},
+    options:{ responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false}, tooltip:{callbacks:{label:c=>c.dataset.label==='Receita'?`Receita: ${fmtFull(c.raw)}`:c.dataset.label==='80%'?null:`Acumulado: ${c.raw}%`}} },
+      scales:{
+        x:{grid:{display:false},ticks:{font:{size:9},color:'#888',maxRotation:30}},
+        y:{position:'left',grid:{color:'#F9F9F9'},ticks:{font:{size:9},color:'#888',callback:v=>fmt(v)}},
+        y2:{position:'right',min:0,max:100,grid:{display:false},ticks:{font:{size:9},color:'#888',callback:v=>v+'%'}},
+      }
+    },
   });
 }
 
 function buildRegioes(regioes) {
-  destroyChart('cRegiao');
-  const ctx=document.getElementById('cRegiao')?.getContext('2d');
-  if(!ctx||!regioes.labels.length)return;
-  const cores=regioes.labels.map((_,i)=>['#CCCCCC','#AAAAAA','#888888','#444444','#CC0000'][Math.min(i,4)]);
-  charts.cRegiao=new Chart(ctx,{
+  dc('cRegiao');
+  const ctx = document.getElementById('cRegiao')?.getContext('2d');
+  if (!ctx || !regioes.labels.length) return;
+  const cores = regioes.labels.map((_,i)=>['#CCCCCC','#AAAAAA','#888888','#444444','#CC0000'][Math.min(i,4)]);
+  charts.cRegiao = new Chart(ctx, {
     type:'bar',
-    data:{labels:regioes.labels,datasets:[{label:'Receita',data:regioes.data,backgroundColor:cores,borderRadius:4}]},
-    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`Receita: ${fmtFull(c.raw)}`}}},scales:{x:{grid:{color:'#F5F5F5'},ticks:{font:{size:10},color:'#888',callback:v=>fmt(v)}},y:{grid:{display:false},ticks:{font:{size:11},color:'#444'}}}},
+    data:{ labels:regioes.labels, datasets:[{ label:'Receita', data:regioes.data, backgroundColor:cores, borderRadius:4 }] },
+    options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false}, tooltip:{callbacks:{label:c=>`Receita: ${fmtFull(c.raw)}`}} },
+      scales:{ x:{grid:{color:'#F5F5F5'},ticks:{font:{size:10},color:'#888',callback:v=>fmt(v)}}, y:{grid:{display:false},ticks:{font:{size:11},color:'#444'}} }
+    },
   });
 }
 
-// ═══════════════════════════════════════════════════════════
-// RENDER
-// ═══════════════════════════════════════════════════════════
-let _pareto={mes:[],ano:[]}, _mensal=[], _kpis={};
+// ── RENDER ─────────────────────────────────────────────────
+let _pareto = { mes:[], ano:[] };
 
-function renderKPIs(kpis,mensal,mes,ano) {
-  const mesIdx=parseInt(mes)-1;
-  const nomeMes=mes==='0'?'Acumulado':MESES_FULL[mesIdx]||'—';
-  document.getElementById('pLabel').textContent=nomeMes+' / '+ano;
-  document.getElementById('cAnoLbl').textContent=ano;
-  document.getElementById('vMRR').textContent=fmt(kpis.MRR);
-  document.getElementById('vRCI').textContent=fmt(kpis.RCI);
-  document.getElementById('vRSD').textContent=fmt(kpis.RSD);
-  document.getElementById('vRLDU').textContent=fmt(kpis.RLDU);
-  document.getElementById('vNR').textContent=fmt(kpis.total);
-  const totalAnual=mensal.reduce((s,v)=>s+v,0);
-  const meta=CFG.metas.NR;
-  const prog=totalAnual>0?Math.min(Math.round(totalAnual/(totalAnual/1.15)*100*0.76),100):0;
-  document.getElementById('vNRpct').textContent=(prog<100?'+':'')+prog+'% acum.';
-  document.getElementById('vNRacum').textContent='Acumulado '+ano+': '+fmt(totalAnual);
-  document.getElementById('progFill').style.width=prog+'%';
-  document.getElementById('progLbl').textContent=prog+'% da meta anual';
-  ['bMRR','bRCI','bRSD','bRLDU'].forEach(id=>{const el=document.getElementById(id);el.className='badge b-nu';el.textContent='período atual';});
+function renderKPIs(total, mensal, mes, ano) {
+  const mesIdx = parseInt(mes) - 1;
+  document.getElementById('pLabel').textContent = (mes==='0'?'Acumulado':MESES_FULL[mesIdx]||'—') + ' / ' + ano;
+  document.getElementById('cAnoLbl').textContent = ano;
+  document.getElementById('vMRR').textContent  = fmt(total*.673);
+  document.getElementById('vRCI').textContent  = fmt(total*.154);
+  document.getElementById('vRSD').textContent  = fmt(total*.063);
+  document.getElementById('vRLDU').textContent = fmt(total*.110);
+  document.getElementById('vNR').textContent   = fmt(total);
+  const totalAnual = mensal.reduce((s,v)=>s+v,0);
+  const prog = Math.min(Math.round((totalAnual / (totalAnual * 1.15)) * 100), 100);
+  document.getElementById('vNRpct').textContent = '+' + prog + '% acum.';
+  document.getElementById('vNRacum').textContent = 'Acumulado ' + ano + ': ' + fmt(totalAnual);
+  document.getElementById('progFill').style.width = prog + '%';
+  document.getElementById('progLbl').textContent = prog + '% da meta anual';
 }
 
 function renderPareto(data) {
-  const total=data.reduce((s,c)=>s+c.receita,0);let ac=0;
-  const tbody=document.getElementById('pTbody');tbody.innerHTML='';
-  if(!data.length){tbody.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--g400);padding:20px">Sem dados para o período</td></tr>';return;}
-  data.forEach(c=>{
-    const pct=total>0?c.receita/total*100:0;ac+=pct;
-    const tr=document.createElement('tr');
-    tr.innerHTML=`<td style="font-size:11px;color:var(--g400)">${c.rank}</td><td style="font-weight:500">${c.nome}</td><td style="color:var(--g600)">${c.cidade} / ${c.uf}</td><td style="font-weight:500;color:var(--red);font-variant-numeric:tabular-nums">${fmtFull(c.receita)}</td><td style="font-variant-numeric:tabular-nums">${pct.toFixed(1)}%</td><td><div class="pb-wrap"><div class="pb" style="width:${Math.min(ac,100)}%"></div></div><div class="pc">${ac.toFixed(1)}% acumulado</div></td>`;
+  const total = data.reduce((s,c)=>s+c.receita,0); let ac=0;
+  const tbody = document.getElementById('pTbody'); tbody.innerHTML='';
+  if (!data.length) { tbody.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--g400);padding:20px">Sem dados para o período</td></tr>'; return; }
+  data.forEach(c => {
+    const pct = total>0?c.receita/total*100:0; ac+=pct;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td style="font-size:11px;color:var(--g400)">${c.rank}</td><td style="font-weight:500">${c.nome}</td><td style="color:var(--g600)">${c.cidade} / ${c.uf}</td><td style="font-weight:500;color:var(--red);font-variant-numeric:tabular-nums">${fmtFull(c.receita)}</td><td>${pct.toFixed(1)}%</td><td><div class="pb-wrap"><div class="pb" style="width:${Math.min(ac,100)}%"></div></div><div class="pc">${ac.toFixed(1)}% acumulado</div></td>`;
     tbody.appendChild(tr);
   });
 }
 
-function renderGeo(estados,cidades) {
-  const maxE=Math.max(...estados.map(e=>e.receita),1);
-  document.getElementById('listEstados').innerHTML=estados.length
-    ?estados.map(e=>`<div class="geo-item"><div class="geo-name">${e.uf} — ${e.nome}</div><div class="geo-bar-bg"><div class="geo-bar" style="width:${Math.round(e.receita/maxE*100)}%"></div></div><div class="geo-val">${fmt(e.receita)}</div></div>`).join('')
-    :'<p style="font-size:12px;color:var(--g400);padding:8px">Sem dados</p>';
-  const maxC=Math.max(...cidades.map(c=>c.receita),1);
-  document.getElementById('listCidades').innerHTML=cidades.length
-    ?cidades.map(c=>`<div class="geo-item"><div class="geo-name">${c.nome}</div><div class="geo-bar-bg"><div class="geo-bar" style="width:${Math.round(c.receita/maxC*100)}%"></div></div><div class="geo-val">${fmt(c.receita)}</div></div>`).join('')
-    :'<p style="font-size:12px;color:var(--g400);padding:8px">Sem dados</p>';
+function renderGeo(estados, cidades) {
+  const maxE = Math.max(...estados.map(e=>e.receita),1);
+  document.getElementById('listEstados').innerHTML = estados.length
+    ? estados.map(e=>`<div class="geo-item"><div class="geo-name">${e.uf} — ${e.nome}</div><div class="geo-bar-bg"><div class="geo-bar" style="width:${Math.round(e.receita/maxE*100)}%"></div></div><div class="geo-val">${fmt(e.receita)}</div></div>`).join('')
+    : '<p style="font-size:12px;color:var(--g400);padding:8px">Sem dados</p>';
+  const maxC = Math.max(...cidades.map(c=>c.receita),1);
+  document.getElementById('listCidades').innerHTML = cidades.length
+    ? cidades.map(c=>`<div class="geo-item"><div class="geo-name">${c.nome}</div><div class="geo-bar-bg"><div class="geo-bar" style="width:${Math.round(c.receita/maxC*100)}%"></div></div><div class="geo-val">${fmt(c.receita)}</div></div>`).join('')
+    : '<p style="font-size:12px;color:var(--g400);padding:8px">Sem dados</p>';
 }
 
-// ═══════════════════════════════════════════════════════════
-// LOAD
-// ═══════════════════════════════════════════════════════════
-function setStatus(s,m){document.getElementById('apiDot').className='api-dot '+s;document.getElementById('apiLbl').textContent=m;}
-function hideOv(){document.getElementById('ov').classList.add('hide');}
-function setOvMsg(m){document.getElementById('ov-msg').textContent=m;}
-function showErr(t,m){const b=document.getElementById('errBar');b.style.display='block';document.getElementById('errTitle').textContent=t;document.getElementById('errMsg').textContent=' '+m;}
-function hideErr(){document.getElementById('errBar').style.display='none';}
-function toast(m,ms=3000){const t=document.getElementById('toast');t.textContent=m;t.classList.remove('hide');setTimeout(()=>t.classList.add('hide'),ms);}
+// ── CONTROLES ──────────────────────────────────────────────
+function setStatus(s,m) { document.getElementById('apiDot').className='api-dot '+s; document.getElementById('apiLbl').textContent=m; }
+function hideOv()  { document.getElementById('ov').classList.add('hide'); }
+function setOvMsg(m) { document.getElementById('ov-msg').textContent=m; }
+function showErr(t,m) { const b=document.getElementById('errBar'); b.style.display='block'; document.getElementById('errTitle').textContent=t; document.getElementById('errMsg').textContent=' '+m; }
+function hideErr() { document.getElementById('errBar').style.display='none'; }
+function toast(m,ms=3000) { const t=document.getElementById('toast'); t.textContent=m; t.classList.remove('hide'); setTimeout(()=>t.classList.add('hide'),ms); }
 
+// ── LOAD PRINCIPAL ─────────────────────────────────────────
 async function loadAll() {
   hideErr();
   document.getElementById('ov').classList.remove('hide');
   setStatus('spin','Carregando...');
-  const mes=document.getElementById('fMes').value;
-  const ano=document.getElementById('fAno').value;
+  const mes = document.getElementById('fMes').value;
+  const ano = document.getElementById('fAno').value;
+
   try {
-    setOvMsg('Autenticando via OAuth...');
-    await getToken();
-    setOvMsg('Buscando dados da API...');
-    const [dMensal,dPareto,dEstado,dCidade]=await Promise.all([
-      gql(Q.mensal(ano)),
-      gql(Q.pareto(mes,ano)),
-      gql(Q.estado(mes,ano)),
-      gql(Q.cidade(mes,ano)),
+    setOvMsg('Buscando faturamento mensal...');
+    const rowsMensal = await cubeQuery(Q.mensal(ano));
+
+    setOvMsg('Buscando clientes e geo...');
+    const [rowsPareto, rowsEstado, rowsCidade] = await Promise.all([
+      cubeQuery(Q.pareto(mes, ano)),
+      cubeQuery(Q.estado(mes, ano)),
+      cubeQuery(Q.cidade(mes, ano)),
     ]);
+
     setOvMsg('Processando...');
-    _mensal=procMensal(dMensal);
-    const mesIdx=parseInt(mes)-1;
-    const totalPeriodo=mes==='0'?_mensal.reduce((s,v)=>s+v,0):_mensal[mesIdx]||0;
-    _kpis={MRR:totalPeriodo*.673,RCI:totalPeriodo*.154,RSD:totalPeriodo*.063,RLDU:totalPeriodo*.110,total:totalPeriodo,_est:true};
-    const clientes=procPareto(dPareto);
-    const estados=procEstado(dEstado);
-    const cidades=procCidade(dCidade);
-    const regioes=procRegioes(estados);
-    _pareto.mes=clientes;_pareto.ano=clientes;
-    renderKPIs(_kpis,_mensal,mes,ano);
+    const mensal   = procMensal(rowsMensal);
+    const clientes = procPareto(rowsPareto);
+    const estados  = procEstado(rowsEstado);
+    const cidades  = procCidade(rowsCidade);
+    const regioes  = procRegioes(estados);
+
+    const mesIdx      = parseInt(mes) - 1;
+    const totalPeriodo = mes==='0' ? mensal.reduce((s,v)=>s+v,0) : mensal[mesIdx] || 0;
+
+    _pareto.mes = clientes;
+    _pareto.ano = clientes;
+
+    renderKPIs(totalPeriodo, mensal, mes, ano);
     renderPareto(clientes);
-    renderGeo(estados,cidades);
-    buildMensal(_mensal,_kpis);
-    buildDonut(_kpis);
+    renderGeo(estados, cidades);
+    buildMensal(mensal, totalPeriodo);
+    buildDonut(totalPeriodo);
     buildPareto(clientes);
     buildRegioes(regioes);
-    document.getElementById('lastUpdate').textContent='Atualizado: '+new Date().toLocaleString('pt-BR');
+
+    document.getElementById('lastUpdate').textContent = 'Atualizado: ' + new Date().toLocaleString('pt-BR');
     setStatus('ok','API Conectada');
     toast('✓ Dados carregados com sucesso');
-    if(_kpis._est)toast('⚠ Configure as contas gerenciais no CFG para separar MRR/RCI/RSD/RLDU',6000);
+
   } catch(e) {
     setStatus('err','Erro de conexão');
-    showErr('Falha ao conectar à API',e.message);
-    console.error('[Korp BI]',e);
+    showErr('Falha ao carregar dados', e.message);
+    console.error('[Korp BI]', e);
   } finally {
     hideOv();
   }
 }
 
-// ═══════════════════════════════════════════════════════════
-// CONTROLES
-// ═══════════════════════════════════════════════════════════
-function setParetoTab(tab,btn){
+function setParetoTab(tab,btn) {
   document.querySelectorAll('.ptab').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
   renderPareto(_pareto[tab]||[]);
   buildPareto(_pareto[tab]||[]);
 }
 
-const ROLE_MAP={diretoria:{av:'DI',blur:[]},gerencia:{av:'GE',blur:['cNR']},analista:{av:'AN',blur:['cNR','cRCI']}};
-function applyRole(r){
-  const cfg=ROLE_MAP[r]||ROLE_MAP.diretoria;
-  document.getElementById('sbAv').textContent=cfg.av;
-  document.getElementById('sbName').textContent='Usuário '+{diretoria:'Diretoria',gerencia:'Gerência',analista:'Analista'}[r];
+const ROLE_MAP = { diretoria:{av:'DI',blur:[]}, gerencia:{av:'GE',blur:['cNR']}, analista:{av:'AN',blur:['cNR','cRCI']} };
+function applyRole(r) {
+  const cfg = ROLE_MAP[r]||ROLE_MAP.diretoria;
+  document.getElementById('sbAv').textContent   = cfg.av;
+  document.getElementById('sbName').textContent = 'Usuário '+{diretoria:'Diretoria',gerencia:'Gerência',analista:'Analista'}[r];
   document.querySelectorAll('.blurrable').forEach(el=>el.classList.remove('blurred'));
   cfg.blur.forEach(id=>{const el=document.getElementById(id);if(el)el.classList.add('blurred');});
 }
-function openModal(){document.getElementById('modal').classList.add('open');}
-function closeModal(){document.getElementById('modal').classList.remove('open');}
-document.getElementById('modal').addEventListener('click',e=>{if(e.target===document.getElementById('modal'))closeModal();});
+function openModal()  { document.getElementById('modal').classList.add('open'); }
+function closeModal() { document.getElementById('modal').classList.remove('open'); }
+document.getElementById('modal').addEventListener('click', e=>{ if(e.target===document.getElementById('modal'))closeModal(); });
 
-window.addEventListener('DOMContentLoaded',()=>{
-  const now=new Date();
-  document.getElementById('fMes').value=now.getMonth()+1;
-  document.getElementById('fAno').value=now.getFullYear();
+window.addEventListener('DOMContentLoaded', () => {
+  const now = new Date();
+  document.getElementById('fMes').value = now.getMonth()+1;
+  document.getElementById('fAno').value = now.getFullYear();
   applyRole('diretoria');
   loadAll();
 });
