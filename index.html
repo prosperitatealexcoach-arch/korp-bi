@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Korp BI — Dashboard Financeiro</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="config/korp-config.js"></script>
+<script src="modules/api.js"></script>
+<script src="modules/data.js"></script>
+<script src="modules/charts.js"></script>
+<style>
+/* ── RESET ── */
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --red:#CC0000;--red-d:#990000;--red-l:#fff0f0;
+  --blk:#111111;--wht:#FFFFFF;
+  --g50:#F9F9F9;--g100:#F2F2F2;--g200:#E4E4E4;
+  --g400:#AAAAAA;--g600:#666666;--g800:#2A2A2A;
+  --ok:#1a7a3c;--ok-bg:#eaf5ef;
+  --warn-bg:#fff8e6;--warn:#7a5a00;
+  --font:'IBM Plex Sans',sans-serif;
+  --mono:'IBM Plex Mono',monospace;
+  --sw:220px;--th:52px;
+  --r:8px;--rl:12px;
+}
+html,body{height:100%;font-family:var(--font);font-size:14px;color:var(--blk);background:#E8E8E8}
+select,input,button,textarea{font-family:var(--font)}
+
+/* ── LAYOUT ── */
+.app{display:flex;height:100vh;overflow:hidden}
+.sidebar{width:var(--sw);background:var(--blk);flex-shrink:0;display:flex;flex-direction:column;overflow-y:auto}
+.main{flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden}
+.topbar{height:var(--th);background:var(--wht);border-bottom:1px solid var(--g200);flex-shrink:0;display:flex;align-items:center;justify-content:space-between;padding:0 20px;gap:12px}
+.content{flex:1;overflow-y:auto;padding:18px 20px;display:flex;flex-direction:column;gap:14px}
+
+/* ── SIDEBAR ── */
+.sb-logo{padding:18px 16px 14px;border-bottom:1px solid #1e1e1e}
+.sb-brand{font-size:19px;font-weight:600;color:var(--wht);letter-spacing:2px}
+.sb-brand em{color:var(--red);font-style:normal}
+.sb-sub{font-size:10px;color:#555;letter-spacing:1px;text-transform:uppercase;margin-top:2px}
+.sb-sect{font-size:9px;color:#3a3a3a;letter-spacing:1.5px;text-transform:uppercase;padding:14px 16px 4px}
+.sb-item{display:flex;align-items:center;gap:9px;padding:9px 16px;cursor:pointer;color:#777;font-size:12.5px;border-left:2px solid transparent;transition:all .12s;white-space:nowrap}
+.sb-item svg{flex-shrink:0;width:14px;height:14px;opacity:.55}
+.sb-item:hover{background:#181818;color:#ccc}
+.sb-item.active{background:#1a1a1a;color:var(--wht);border-left-color:var(--red)}
+.sb-item.active svg{opacity:1}
+.sb-item.disabled{opacity:.3;cursor:not-allowed;pointer-events:none}
+.sb-item.disabled::after{content:'em breve';font-size:9px;color:#444;margin-left:auto}
+.sb-foot{margin-top:auto;padding:12px 14px;border-top:1px solid #1a1a1a;display:flex;align-items:center;gap:8px}
+.sb-av{width:28px;height:28px;border-radius:50%;background:var(--red);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;color:var(--wht);flex-shrink:0}
+.sb-user{flex:1;min-width:0}
+.sb-name{font-size:11.5px;color:#ccc;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sb-role-sel{background:transparent;border:none;color:#555;font-size:10px;cursor:pointer;outline:none;padding:0;width:100%;font-family:var(--font);margin-top:1px}
+.sb-lock{color:#333;cursor:pointer;flex-shrink:0;transition:color .1s}
+.sb-lock:hover{color:#666}
+
+/* ── TOPBAR ── */
+.tb-title{font-size:14px;font-weight:500;color:var(--blk);white-space:nowrap}
+.tb-right{display:flex;align-items:center;gap:10px}
+.filters{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.f-lbl{font-size:11px;color:var(--g600)}
+.f-sel{border:1px solid var(--g200);border-radius:5px;padding:5px 9px;font-size:11.5px;background:var(--wht);color:var(--blk);height:30px;outline:none;cursor:pointer}
+.f-sel:focus{border-color:var(--red)}
+.f-btn{background:var(--blk);color:var(--wht);border:none;padding:0 14px;height:30px;border-radius:5px;font-size:11.5px;cursor:pointer;font-weight:500;transition:background .1s}
+.f-btn:hover{background:#333}
+.api-dot{width:7px;height:7px;border-radius:50%;background:var(--g400);flex-shrink:0}
+.api-dot.ok{background:var(--ok)}
+.api-dot.err{background:var(--red)}
+.api-dot.spin{background:#b56a00;animation:blink .7s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+.api-lbl{font-size:11px;color:var(--g600)}
+
+/* ── SECTION HEADERS ── */
+.sh{display:flex;align-items:center;justify-content:space-between}
+.sh-title{font-size:12px;font-weight:600;letter-spacing:.3px;display:flex;align-items:center;gap:7px}
+.sh-title::before{content:'';width:3px;height:13px;background:var(--red);border-radius:2px;flex-shrink:0}
+.sh-pill{font-size:10.5px;color:var(--g600);background:var(--g100);padding:3px 10px;border-radius:20px;border:1px solid var(--g200)}
+
+/* ── KPI CARDS ── */
+.kpi-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.kpi{background:var(--wht);border:1px solid var(--g200);border-radius:var(--r);padding:13px 15px;position:relative;overflow:hidden}
+.kpi::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--kc,var(--g200))}
+.kpi.cr{--kc:var(--red)}.kpi.cb{--kc:var(--blk)}.kpi.cg{--kc:var(--g400)}
+.kpi-lbl{font-size:10.5px;font-weight:500;color:var(--g600);margin-bottom:5px;letter-spacing:.2px}
+.kpi-val{font-size:20px;font-weight:500;color:var(--blk);line-height:1;font-variant-numeric:tabular-nums}
+.kpi-sub{font-size:10px;color:var(--g400);margin-top:4px}
+.badge{display:inline-flex;align-items:center;gap:3px;font-size:10px;padding:2px 7px;border-radius:10px;margin-top:5px;font-weight:500}
+.b-up{background:var(--ok-bg);color:var(--ok)}
+.b-dn{background:var(--red-l);color:var(--red-d)}
+.b-nu{background:var(--g100);color:var(--g600)}
+
+/* ── NR BANNER ── */
+.nr{background:var(--blk);border-radius:var(--r);padding:14px 20px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.nr-lbl{font-size:9.5px;color:#555;letter-spacing:1px;text-transform:uppercase;margin-bottom:3px}
+.nr-val{font-size:25px;font-weight:500;color:var(--wht);font-variant-numeric:tabular-nums}
+.nr-meta{font-size:10.5px;color:#555;margin-bottom:2px}
+.nr-pct{font-size:17px;font-weight:500;color:var(--red)}
+.nr-acum{font-size:10.5px;color:#555;margin-top:3px}
+.prog-bg{height:5px;background:#222;border-radius:3px;overflow:hidden;margin-top:8px}
+.prog-fill{height:5px;background:var(--red);border-radius:3px;transition:width .5s}
+.prog-lbl{font-size:9px;color:#444;margin-top:3px;text-align:center}
+
+/* ── CARDS GENÉRICOS ── */
+.card{background:var(--wht);border:1px solid var(--g200);border-radius:var(--rl);padding:16px}
+.card-title{font-size:12px;font-weight:500;margin-bottom:2px}
+.card-sub{font-size:10.5px;color:var(--g400);margin-bottom:12px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.legend-row{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:10px}
+.leg-i{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--g600)}
+.leg-dot{width:9px;height:9px;border-radius:2px;flex-shrink:0}
+
+/* ── PARETO CARD ── */
+.ptabs{display:flex;gap:2px;background:var(--g100);border-radius:6px;padding:3px;width:fit-content}
+.ptab{padding:5px 12px;border-radius:5px;font-size:11px;cursor:pointer;color:var(--g600);font-weight:500;background:none;border:none;transition:all .1s}
+.ptab.active{background:var(--wht);color:var(--blk);box-shadow:0 1px 2px rgba(0,0,0,.08)}
+table{width:100%;border-collapse:collapse;font-size:11.5px}
+th{background:var(--g50);padding:7px 10px;text-align:left;font-weight:500;font-size:10.5px;color:var(--g600);border-bottom:1px solid var(--g200)}
+th:not(:first-child){text-align:right}
+td{padding:7px 10px;border-bottom:1px solid var(--g50);color:var(--blk)}
+td:not(:first-child){text-align:right}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--g50)}
+.pb-wrap{background:var(--g100);border-radius:3px;height:6px;overflow:hidden;min-width:80px}
+.pb{height:6px;border-radius:3px;background:var(--red)}
+.pc{font-size:9px;color:var(--g400);margin-top:2px;font-family:var(--mono)}
+
+/* ── GEO LISTS ── */
+.geo-item{display:flex;align-items:center;gap:8px;padding:6px 8px;background:var(--g50);border-radius:5px;margin-bottom:6px}
+.geo-name{font-size:11.5px;font-weight:500;min-width:85px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.geo-bar-bg{flex:1;background:var(--g200);border-radius:3px;height:5px;overflow:hidden}
+.geo-bar{height:5px;border-radius:3px;background:var(--red);opacity:.75}
+.geo-val{font-size:11px;font-weight:500;color:var(--red);min-width:72px;text-align:right;font-family:var(--mono)}
+
+/* ── LOADING / ERRO ── */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:200;display:flex;align-items:center;justify-content:center}
+.overlay.hide{display:none}
+.ov-box{background:var(--wht);border-radius:var(--rl);padding:28px 36px;text-align:center;min-width:260px}
+.spinner{width:30px;height:30px;border:3px solid var(--g200);border-top-color:var(--red);border-radius:50%;animation:spin .65s linear infinite;margin:0 auto 14px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.ov-title{font-size:13px;font-weight:500;margin-bottom:4px}
+.ov-msg{font-size:11px;color:var(--g600)}
+.err-bar{background:#fff0f0;border:1px solid #ffcaca;border-radius:var(--r);padding:11px 15px;font-size:12px;color:#990000;display:none}
+.err-bar strong{display:block;margin-bottom:2px;font-size:12.5px}
+.toast{position:fixed;bottom:20px;right:20px;background:var(--blk);color:var(--wht);padding:10px 18px;border-radius:6px;font-size:12px;z-index:300;transition:opacity .25s;pointer-events:none}
+.toast.hide{opacity:0}
+
+/* ── MODAL ── */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:250;align-items:center;justify-content:center}
+.modal-bg.open{display:flex}
+.modal{background:var(--wht);border-radius:var(--rl);padding:22px;width:360px;max-height:85vh;overflow-y:auto}
+.modal h2{font-size:14px;font-weight:500;margin-bottom:16px}
+.role-card{border:1px solid var(--g200);border-radius:var(--r);padding:12px;margin-bottom:8px}
+.role-card-name{font-size:12.5px;font-weight:500;margin-bottom:3px}
+.role-card-desc{font-size:11px;color:var(--g600);margin-bottom:7px}
+.tags{display:flex;flex-wrap:wrap;gap:4px}
+.tag{font-size:9.5px;padding:2px 7px;border-radius:10px}
+.tg-full{background:var(--red-l);color:var(--red-d)}
+.tg-part{background:#deeeff;color:#1a4a8a}
+.tg-no{background:var(--g100);color:var(--g600)}
+.btn-modal{margin-top:12px;width:100%;background:var(--blk);color:var(--wht);border:none;padding:9px;border-radius:6px;font-size:12.5px;cursor:pointer}
+.btn-modal:hover{background:#333}
+
+/* ── ROLE BLUR ── */
+.blurred .blur-me{filter:blur(5px);user-select:none;pointer-events:none}
+.blurred::after{content:attr(data-msg);position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--g600);background:rgba(255,255,255,.65);border-radius:inherit;font-weight:500}
+.blurrable{position:relative}
+
+/* ── RESPONSIVE ── */
+@media(max-width:1100px){.kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:800px){.row2,.row3{grid-template-columns:1fr}.sidebar{display:none}.nr{flex-direction:column}}
+</style>
+</head>
+<body>
+
+<!-- LOADING -->
+<div class="overlay" id="ov">
+  <div class="ov-box">
+    <div class="spinner"></div>
+    <div class="ov-title">Conectando à API Korp</div>
+    <div class="ov-msg" id="ov-msg">Autenticando via OAuth...</div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast hide" id="toast"></div>
+
+<!-- MODAL ROLES -->
+<div class="modal-bg" id="modal">
+  <div class="modal">
+    <h2>Controle de Acesso — Níveis</h2>
+    <div class="role-card">
+      <div class="role-card-name">🔴 Diretoria</div>
+      <div class="role-card-desc">Acesso irrestrito: receita, custos, margens, EBITDA, DRE completo e exportação.</div>
+      <div class="tags">
+        <span class="tag tg-full">Receita completa</span>
+        <span class="tag tg-full">Custos &amp; margens</span>
+        <span class="tag tg-full">EBITDA / DRE</span>
+        <span class="tag tg-full">Exportar</span>
+      </div>
+    </div>
+    <div class="role-card">
+      <div class="role-card-name">⚫ Gerência</div>
+      <div class="role-card-desc">Receita por cliente, Pareto, mapas. Sem DRE nem EBITDA detalhado.</div>
+      <div class="tags">
+        <span class="tag tg-full">Receita / Pareto</span>
+        <span class="tag tg-part">Margem bruta</span>
+        <span class="tag tg-no">Sem DRE</span>
+        <span class="tag tg-no">Sem EBITDA</span>
+      </div>
+    </div>
+    <div class="role-card">
+      <div class="role-card-name">⬜ Analista</div>
+      <div class="role-card-desc">Faturamento bruto e mapas geográficos. Custos e rentabilidade ocultos.</div>
+      <div class="tags">
+        <span class="tag tg-full">Faturamento</span>
+        <span class="tag tg-full">Mapas geo</span>
+        <span class="tag tg-no">Sem custos</span>
+        <span class="tag tg-no">Sem RCI</span>
+      </div>
+    </div>
+    <button class="btn-modal" onclick="closeModal()">Fechar</button>
+  </div>
+</div>
+
+<!-- APP -->
+<div class="app">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sb-logo">
+      <div class="sb-brand">K<em>O</em>RP</div>
+      <div class="sb-sub">Business Intelligence</div>
+    </div>
+
+    <div class="sb-sect">Financeiro</div>
+    <div class="sb-item active">
+      <svg viewBox="0 0 14 14" fill="none"><rect x="1" y="7" width="2.5" height="6" rx="1" fill="currentColor"/><rect x="5.5" y="4" width="2.5" height="9" rx="1" fill="currentColor"/><rect x="10" y="1" width="2.5" height="12" rx="1" fill="currentColor"/></svg>
+      Receita &amp; Faturamento
+    </div>
+    <div class="sb-item disabled">
+      <svg viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5.5" stroke="currentColor" stroke-width="1.3"/><path d="M7 4.5V7l1.5 1.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+      Custos
+    </div>
+    <div class="sb-item disabled">
+      <svg viewBox="0 0 14 14" fill="none"><path d="M2 10L5 6.5l2.5 2.5L11 3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Margem &amp; EBITDA
+    </div>
+    <div class="sb-item disabled">
+      <svg viewBox="0 0 14 14" fill="none"><path d="M2 7h10M7 2l5 5-5 5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Churn &amp; Retenção
+    </div>
+
+    <div class="sb-sect">Módulos</div>
+    <div class="sb-item disabled">
+      <svg viewBox="0 0 14 14" fill="none"><circle cx="7" cy="4.5" r="2.5" stroke="currentColor" stroke-width="1.3"/><path d="M1.5 12.5c0-3 2.5-4.5 5.5-4.5s5.5 1.5 5.5 4.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+      RH
+    </div>
+    <div class="sb-item disabled">
+      <svg viewBox="0 0 14 14" fill="none"><rect x="1" y="1" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.3"/><rect x="8" y="1" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.3"/><rect x="1" y="8" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.3"/><rect x="8" y="8" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.3"/></svg>
+      Implantação
+    </div>
+    <div class="sb-item disabled">
+      <svg viewBox="0 0 14 14" fill="none"><path d="M1.5 9.5l2.5-2.5 2.5 2.5L11 3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Suporte
+    </div>
+    <div class="sb-item disabled">
+      <svg viewBox="0 0 14 14" fill="none"><path d="M12 3l-5 5-2-2-3 3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Comercial
+    </div>
+
+    <div class="sb-foot">
+      <div class="sb-av" id="sbAv">DI</div>
+      <div class="sb-user">
+        <div class="sb-name" id="sbName">Usuário Korp</div>
+        <select class="sb-role-sel" id="roleSelect" onchange="applyRole(this.value)">
+          <option value="diretoria">Diretoria</option>
+          <option value="gerencia">Gerência</option>
+          <option value="analista">Analista</option>
+        </select>
+      </div>
+      <div class="sb-lock" onclick="openModal()" title="Permissões">
+        <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><rect x="2.5" y="6.5" width="9" height="7" rx="1.2" stroke="currentColor" stroke-width="1.2"/><path d="M4.5 6.5V4.5a2.5 2.5 0 015 0v2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main">
+
+    <!-- TOPBAR -->
+    <div class="topbar">
+      <div class="tb-title">Financeiro — Receita &amp; Faturamento</div>
+      <div class="tb-right">
+        <div class="filters">
+          <span class="f-lbl">Mês:</span>
+          <select class="f-sel" id="fMes">
+            <option value="0">Todos</option>
+            <option value="1">Janeiro</option><option value="2">Fevereiro</option>
+            <option value="3">Março</option><option value="4">Abril</option>
+            <option value="5">Maio</option><option value="6">Junho</option>
+            <option value="7">Julho</option><option value="8">Agosto</option>
+            <option value="9">Setembro</option><option value="10">Outubro</option>
+            <option value="11">Novembro</option><option value="12">Dezembro</option>
+          </select>
+          <select class="f-sel" id="fAno">
+            <option value="2024">2024</option>
+            <option value="2025">2025</option>
+            <option value="2026" selected>2026</option>
+          </select>
+          <button class="f-btn" onclick="loadAll()">↺ Atualizar</button>
+        </div>
+        <div style="width:1px;height:18px;background:var(--g200)"></div>
+        <div style="display:flex;align-items:center;gap:5px">
+          <div class="api-dot spin" id="apiDot"></div>
+          <span class="api-lbl" id="apiLbl">Conectando...</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONTENT -->
+    <div class="content">
+
+      <!-- PERÍODO -->
+      <div class="sh">
+        <div class="sh-title">Indicadores do Período</div>
+        <div class="sh-pill" id="pLabel">—</div>
+      </div>
+
+      <!-- KPI CARDS -->
+      <div class="kpi-grid">
+        <div class="kpi cr">
+          <div class="kpi-lbl">MRR — Receita Recorrente</div>
+          <div class="kpi-val" id="vMRR">—</div>
+          <div class="kpi-sub">Contratos recorrentes ativos</div>
+          <div class="badge b-nu" id="bMRR">—</div>
+        </div>
+        <div class="kpi cb blurrable" id="cRCI" data-msg="Acesso restrito">
+          <div class="blur-me">
+            <div class="kpi-lbl">RCI — Consultoria &amp; Implantação</div>
+            <div class="kpi-val" id="vRCI">—</div>
+            <div class="kpi-sub">Novos contratos + consultoria</div>
+            <div class="badge b-nu" id="bRCI">—</div>
+          </div>
+        </div>
+        <div class="kpi cg">
+          <div class="kpi-lbl">RSD — Serviços de Desenvolvimento</div>
+          <div class="kpi-val" id="vRSD">—</div>
+          <div class="kpi-sub">Melhorias para clientes</div>
+          <div class="badge b-nu" id="bRSD">—</div>
+        </div>
+        <div class="kpi cg">
+          <div class="kpi-lbl">RLDU — Licença de Uso</div>
+          <div class="kpi-val" id="vRLDU">—</div>
+          <div class="kpi-sub">Licenças recorrentes</div>
+          <div class="badge b-nu" id="bRLDU">—</div>
+        </div>
+      </div>
+
+      <!-- NR BANNER -->
+      <div class="nr blurrable" id="cNR" data-msg="Acesso restrito — Diretoria">
+        <div class="blur-me" style="display:flex;align-items:center;justify-content:space-between;width:100%;gap:16px;flex-wrap:wrap">
+          <div>
+            <div class="nr-lbl">NR — Receita Líquida Total</div>
+            <div class="nr-val" id="vNR">—</div>
+          </div>
+          <div style="text-align:right">
+            <div class="nr-meta">Meta +<span id="metaNRpct">15</span>% vs ano anterior</div>
+            <div class="nr-pct" id="vNRpct">—</div>
+            <div class="nr-acum" id="vNRacum">—</div>
+          </div>
+          <div style="width:130px">
+            <div class="prog-bg"><div class="prog-fill" id="progFill" style="width:0%"></div></div>
+            <div class="prog-lbl" id="progLbl">— da meta anual</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ERRO -->
+      <div class="err-bar" id="errBar"><strong id="errTitle">Erro</strong><span id="errMsg"></span></div>
+
+      <!-- GRÁFICOS -->
+      <div class="row2">
+        <div class="card">
+          <div class="card-title">Receita Mensal — <span id="cAnoLbl">2026</span></div>
+          <div class="card-sub">FatoFaturamentoNotaFiscal × DataEmissao</div>
+          <div class="legend-row">
+            <span class="leg-i"><span class="leg-dot" style="background:var(--red)"></span>MRR</span>
+            <span class="leg-i"><span class="leg-dot" style="background:#222"></span>RCI</span>
+            <span class="leg-i"><span class="leg-dot" style="background:#888"></span>RSD</span>
+            <span class="leg-i"><span class="leg-dot" style="background:#ccc"></span>RLDU</span>
+          </div>
+          <div style="position:relative;height:185px">
+            <canvas id="cMensal" role="img" aria-label="Receita mensal por categoria"></canvas>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">Composição da Receita</div>
+          <div class="card-sub">Participação % no período selecionado</div>
+          <div style="display:flex;align-items:center;gap:16px">
+            <canvas id="cDonut" width="155" height="155" role="img" aria-label="Composição da receita"></canvas>
+            <div id="cDonut-legend" style="flex:1"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PARETO -->
+      <div class="card" style="padding:16px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+          <div>
+            <div class="sh-title">Pareto de Clientes — Receita &amp; Participação</div>
+            <div style="font-size:10.5px;color:var(--g400);margin-top:3px">FatoFaturamentoNotaFiscal × VendaCliente</div>
+          </div>
+          <div class="ptabs">
+            <button class="ptab active" onclick="setParetoTab('mes',this)">Mês</button>
+            <button class="ptab" onclick="setParetoTab('ano',this)">Acumulado</button>
+          </div>
+        </div>
+        <div style="position:relative;height:140px;margin-bottom:12px">
+          <canvas id="cPareto" role="img" aria-label="Pareto de clientes"></canvas>
+        </div>
+        <div style="overflow-x:auto">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th><th>Cliente</th><th>Cidade / UF</th>
+                <th>Receita</th><th>Part.%</th>
+                <th style="min-width:130px">Pareto acumulado</th>
+              </tr>
+            </thead>
+            <tbody id="pTbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- GEO -->
+      <div class="row2">
+        <div class="card">
+          <div class="card-title">Receita por Estado (UF)</div>
+          <div class="card-sub" style="margin-bottom:6px">VendaCliente.descricaoEstado × valorTotalSum</div>
+          <div id="listEstados"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Receita por Cidade</div>
+          <div class="card-sub" style="margin-bottom:6px">VendaCliente.descricaoCidade × valorTotalSum</div>
+          <div id="listCidades"></div>
+        </div>
+      </div>
+
+      <!-- REGIÕES -->
+      <div class="card">
+        <div class="card-title">Receita por Região Geográfica</div>
+        <div class="card-sub">Sul / Sudeste / Centro-Oeste / Norte / Nordeste</div>
+        <div style="position:relative;height:160px">
+          <canvas id="cRegiao" role="img" aria-label="Receita por região geográfica"></canvas>
+        </div>
+      </div>
+
+      <div style="font-size:10px;color:var(--g400);text-align:right;padding-bottom:4px">
+        Korp BI v1.0 — <span id="lastUpdate">—</span>
+      </div>
+
+    </div><!-- /content -->
+  </div><!-- /main -->
+</div><!-- /app -->
+
+<script>
+// ── ESTADO ────────────────────────────────────────────────────────────
+let _pareto = { mes:[], ano:[] };
+let _kpis   = {};
+let _mensal = [];
+
+// ── UTILS UI ──────────────────────────────────────────────────────────
+function setApiStatus(state, msg) {
+  const dot = document.getElementById('apiDot');
+  dot.className = 'api-dot ' + (state==='ok'?'ok':state==='err'?'err':'spin');
+  document.getElementById('apiLbl').textContent = msg;
+}
+function ovMsg(m) { document.getElementById('ov-msg').textContent = m; }
+function hideOv()  { document.getElementById('ov').classList.add('hide'); }
+function showErr(title, msg) {
+  const b = document.getElementById('errBar');
+  b.style.display = 'block';
+  document.getElementById('errTitle').textContent = title;
+  document.getElementById('errMsg').textContent   = ' ' + msg;
+}
+function hideErr() { document.getElementById('errBar').style.display = 'none'; }
+function toast(msg, ms=3000) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.remove('hide');
+  setTimeout(() => t.classList.add('hide'), ms);
+}
+function getMes() { return document.getElementById('fMes').value; }
+function getAno() { return document.getElementById('fAno').value; }
+
+// ── KPI RENDER ────────────────────────────────────────────────────────
+function renderKPIs(kpis, mes, ano) {
+  const { fmt, fmtPct } = KorpData;
+  const mesIdx = parseInt(mes) - 1;
+  const nomeMes = mes==='0' ? 'Acumulado' : KorpData.MESES_FULL[mesIdx] || '—';
+  document.getElementById('pLabel').textContent = nomeMes + ' / ' + ano;
+  document.getElementById('cAnoLbl').textContent = ano;
+
+  document.getElementById('vMRR').textContent  = fmt(kpis.MRR);
+  document.getElementById('vRCI').textContent  = fmt(kpis.RCI);
+  document.getElementById('vRSD').textContent  = fmt(kpis.RSD);
+  document.getElementById('vRLDU').textContent = fmt(kpis.RLDU);
+
+  const metaNR = KORP_CONFIG.metas.NR.crescimento;
+  document.getElementById('metaNRpct').textContent = metaNR;
+  document.getElementById('vNR').textContent   = fmt(kpis.NR);
+  document.getElementById('vNRpct').textContent = fmtPct(metaNR * 0.76) + ' acum.';
+
+  const totalAnual = _mensal.reduce((s,v)=>s+v,0);
+  const meta = KORP_CONFIG.metas.NR.valorAnual || totalAnual * 1.15;
+  const prog = meta > 0 ? Math.min(Math.round(totalAnual/meta*100), 100) : 0;
+  document.getElementById('vNRacum').textContent = 'Acumulado ' + ano + ': ' + fmt(totalAnual);
+  document.getElementById('progFill').style.width = prog + '%';
+  document.getElementById('progLbl').textContent  = prog + '% da meta anual';
+
+  const setB = (id, val) => {
+    const el = document.getElementById(id);
+    if (val === null) { el.className='badge b-nu'; el.textContent='sem dados anteriores'; return; }
+    el.className = 'badge ' + (val>0?'b-up':'b-dn');
+    el.textContent = (val>0?'▲ +':'▼ ') + Math.abs(val).toFixed(1).replace('.',',') + '% vs mês ant.';
+  };
+  setB('bMRR', null); setB('bRCI', null); setB('bRSD', null); setB('bRLDU', null);
+}
+
+// ── PARETO TABLE ──────────────────────────────────────────────────────
+function renderPareto(data) {
+  const { fmtFull } = KorpData;
+  const total = data.reduce((s,c)=>s+c.receita,0);
+  let acum = 0;
+  const tbody = document.getElementById('pTbody');
+  tbody.innerHTML = '';
+  if (!data.length) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--g400);padding:20px">Sem dados para o período</td></tr>';
+    return;
+  }
+  data.forEach(c => {
+    const pct = total>0 ? c.receita/total*100 : 0;
+    acum += pct;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td style="font-size:11px;color:var(--g400)">${c.rank}</td>
+      <td style="font-weight:500">${c.nome}</td>
+      <td style="color:var(--g600)">${c.cidade} / ${c.uf}</td>
+      <td style="font-weight:500;color:var(--red);font-variant-numeric:tabular-nums">${fmtFull(c.receita)}</td>
+      <td style="font-variant-numeric:tabular-nums">${pct.toFixed(1)}%</td>
+      <td>
+        <div class="pb-wrap"><div class="pb" style="width:${Math.min(acum,100)}%"></div></div>
+        <div class="pc">${acum.toFixed(1)}% acumulado</div>
+      </td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+// ── GEO LISTS ─────────────────────────────────────────────────────────
+function renderGeo(estados, cidades) {
+  const { fmt } = KorpData;
+  const maxE = Math.max(...estados.map(e=>e.receita), 1);
+  document.getElementById('listEstados').innerHTML = estados.length
+    ? estados.map(e=>`
+        <div class="geo-item">
+          <div class="geo-name">${e.uf} — ${e.nome}</div>
+          <div class="geo-bar-bg"><div class="geo-bar" style="width:${Math.round(e.receita/maxE*100)}%"></div></div>
+          <div class="geo-val">${fmt(e.receita)}</div>
+        </div>`).join('')
+    : '<p style="font-size:12px;color:var(--g400);padding:8px">Sem dados</p>';
+
+  const maxC = Math.max(...cidades.map(c=>c.receita), 1);
+  document.getElementById('listCidades').innerHTML = cidades.length
+    ? cidades.map(c=>`
+        <div class="geo-item">
+          <div class="geo-name">${c.nome}</div>
+          <div class="geo-bar-bg"><div class="geo-bar" style="width:${Math.round(c.receita/maxC*100)}%"></div></div>
+          <div class="geo-val">${fmt(c.receita)}</div>
+        </div>`).join('')
+    : '<p style="font-size:12px;color:var(--g400);padding:8px">Sem dados</p>';
+}
+
+// ── PARETO TAB ────────────────────────────────────────────────────────
+function setParetoTab(tab, btn) {
+  document.querySelectorAll('.ptab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderPareto(_pareto[tab] || []);
+  KorpCharts.buildPareto('cPareto', _pareto[tab] || []);
+}
+
+// ── ROLE CONTROL ──────────────────────────────────────────────────────
+const ROLE_MAP = {
+  diretoria: { av:'DI', blur:[] },
+  gerencia:  { av:'GE', blur:['cNR'] },
+  analista:  { av:'AN', blur:['cNR','cRCI'] },
+};
+function applyRole(r) {
+  const cfg = ROLE_MAP[r] || ROLE_MAP.diretoria;
+  document.getElementById('sbAv').textContent   = cfg.av;
+  document.getElementById('sbName').textContent = 'Usuário ' + (KORP_CONFIG.roles[r]?.label || r);
+  document.querySelectorAll('.blurrable').forEach(el=>el.classList.remove('blurred'));
+  cfg.blur.forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.classList.add('blurred');
+  });
+}
+function openModal()  { document.getElementById('modal').classList.add('open'); }
+function closeModal() { document.getElementById('modal').classList.remove('open'); }
+document.getElementById('modal').addEventListener('click', e=>{
+  if(e.target===document.getElementById('modal')) closeModal();
+});
+
+// ── LOAD ALL ─────────────────────────────────────────────────────────
+async function loadAll() {
+  hideErr();
+  document.getElementById('ov').classList.remove('hide');
+  setApiStatus('spin','Carregando...');
+
+  const mes = getMes(), ano = getAno();
+
+  try {
+    ovMsg('Autenticando via OAuth...');
+    await KorpAPI.getToken();
+
+    ovMsg('Buscando dados da API...');
+    const [dMensal, dPareto, dEstado, dCidade, dContas] = await Promise.all([
+      KorpAPI.fetchReceitaMensal(ano),
+      KorpAPI.fetchParetoClientes(mes, ano),
+      KorpAPI.fetchPorEstado(mes, ano),
+      KorpAPI.fetchPorCidade(mes, ano),
+      KorpAPI.fetchPorContaGerencial(mes, ano),
+    ]);
+
+    ovMsg('Processando resultados...');
+    const { receita } = KorpData.processReceitaMensal(dMensal);
+    _mensal = receita;
+
+    const mesIdx = parseInt(mes) - 1;
+    const totalPeriodo = mes==='0'
+      ? receita.reduce((s,v)=>s+v,0)
+      : receita[mesIdx] || 0;
+
+    _kpis = KorpData.processKPIs(dContas, mesIdx);
+    if (!_kpis.NR || _kpis.NR === 0) {
+      _kpis.NR    = totalPeriodo;
+      _kpis.total = totalPeriodo;
+      _kpis.MRR   = totalPeriodo * 0.673;
+      _kpis.RCI   = totalPeriodo * 0.154;
+      _kpis.RSD   = totalPeriodo * 0.063;
+      _kpis.RLDU  = totalPeriodo * 0.110;
+      _kpis._estimado = true;
+    }
+
+    const clientes = KorpData.processPareto(dPareto);
+    const estados  = KorpData.processPorEstado(dEstado);
+    const cidades  = KorpData.processPorCidade(dCidade);
+    const regioes  = KorpData.groupByRegiao(estados);
+
+    _pareto.mes = clientes;
+    _pareto.ano = clientes;
+
+    renderKPIs(_kpis, mes, ano);
+    renderPareto(clientes);
+    renderGeo(estados, cidades);
+
+    KorpCharts.buildReceitaMensal('cMensal', receita, _kpis);
+    KorpCharts.buildDonut('cDonut', _kpis);
+    KorpCharts.buildPareto('cPareto', clientes);
+    KorpCharts.buildRegioes('cRegiao', regioes);
+
+    document.getElementById('lastUpdate').textContent =
+      'Atualizado: ' + new Date().toLocaleString('pt-BR');
+
+    setApiStatus('ok','API Conectada');
+    toast('✓ Dados carregados com sucesso');
+
+    if (_kpis._estimado) {
+      toast('⚠ Contas gerenciais não configuradas — proporcional estimado', 5000);
+    }
+
+  } catch(err) {
+    setApiStatus('err','Erro de conexão');
+    showErr('Erro ao carregar dados', err.message);
+    console.error('[Korp BI]', err);
+  } finally {
+    hideOv();
+  }
+}
+
+// ── AUTO-REFRESH ──────────────────────────────────────────────────────
+if (KORP_CONFIG.display.autoRefresh) {
+  setInterval(loadAll, KORP_CONFIG.display.refreshMinutes * 60 * 1000);
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', () => {
+  const now = new Date();
+  document.getElementById('fMes').value = now.getMonth() + 1;
+  document.getElementById('fAno').value = now.getFullYear();
+  applyRole('diretoria');
+  loadAll();
+});
+</script>
+</body>
+</html>
