@@ -337,10 +337,10 @@ const Q = {
   // Receita total por mês — agrupado por DataEmissao.mes
   mensal: (ano) => ({
     measures:   ['FatoFaturamentoNotaFiscal.valorTotalSum'],
-    dimensions: ['DataEmissao.mes', 'DataEmissao.ano'],
+    dimensions: ['DataEmissao.mes'],
     filters:    [{ member: 'DataEmissao.ano', operator: 'equals', values: [String(ano)] }],
-    limit: 12,
-    order: { 'DataEmissao.mes': 'asc' },
+    order:      { 'DataEmissao.mes': 'asc' },
+    limit:      12,
   }),
 
   // Pareto — receita por cliente
