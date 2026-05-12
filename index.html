@@ -317,14 +317,12 @@ tr:hover td{background:var(--g50)}
 
 <script>
 // ═══════════════════════════════════════════════════════════
-// CONFIGURAÇÃO — edite aqui as credenciais e metas
+// CONFIGURAÇÃO
+// ▶ Após criar o Cloudflare Worker, cole a URL dele abaixo.
 // ═══════════════════════════════════════════════════════════
 const CFG = {
-  authUrl:      'https://api.korp.com.br/oauth/connect/token',
-  graphqlUrl:   'https://api.korp.com.br/bi/v1/graphql',
-  clientId:     'DC14AF06-7E0C-4172-B963-B2F69E3A307B',
-  clientSecret: 'P62CRMeZQwUSn1sqvv7AAbAgf4ewVSvK',
-  grantType:    'client_credentials',
+  // ↓↓↓ SUBSTITUA pela URL do seu Worker após o deploy ↓↓↓
+  proxyUrl:   'https://korp-proxy.prosperitate-alexcoach.workers.dev',
   // Contas gerenciais — preencha com nomes exatos do ERP
   contas: { MRR:'', RCI:'', RSD:'', RLDU:'' },
   // Metas 2026
@@ -333,37 +331,25 @@ const CFG = {
 };
 
 // ═══════════════════════════════════════════════════════════
-// API — OAuth + GraphQL
+// API — via Cloudflare Worker proxy (sem CORS, sem secret exposto)
 // ═══════════════════════════════════════════════════════════
-let _token = null, _tokenExp = 0;
 
-async function getToken() {
-  if (_token && Date.now() < _tokenExp - 60000) return _token;
-  const body = new URLSearchParams({
-    grant_type: CFG.grantType, client_id: CFG.clientId, client_secret: CFG.clientSecret,
-  });
-  const r = await fetch(CFG.authUrl, {
-    method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded'}, body,
-  });
-  if (!r.ok) throw new Error(`Auth falhou HTTP ${r.status}: ${await r.text()}`);
-  const d = await r.json();
-  _token = d.access_token;
-  _tokenExp = Date.now() + (d.expires_in || 3600) * 1000;
-  return _token;
-}
-
+// O Worker cuida do OAuth — o dashboard só envia queries GraphQL
 async function gql(query) {
-  const token = await getToken();
-  const r = await fetch(CFG.graphqlUrl, {
-    method:'POST',
-    headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
-    body: JSON.stringify({query}),
+  const r = await fetch(CFG.proxyUrl, {
+    method:  'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body:    JSON.stringify({ query }),
   });
-  if (!r.ok) throw new Error(`GraphQL HTTP ${r.status}`);
+  if (!r.ok) throw new Error(`Proxy HTTP ${r.status}`);
   const d = await r.json();
-  if (d.errors) throw new Error(d.errors.map(e=>e.message).join('; '));
+  if (d.error)  throw new Error('Worker: ' + d.error);
+  if (d.errors) throw new Error(d.errors.map(e => e.message).join('; '));
   return d.data;
 }
+
+// Mantido para compatibilidade — não faz mais nada no cliente
+async function getToken() { return 'via-proxy'; }
 
 function buildFilters(mes, ano) {
   const f = [];
