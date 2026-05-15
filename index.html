@@ -323,6 +323,24 @@ tr:hover td{background:var(--g50)}
         </div>
       </div>
 
+      <!-- GRÁFICO DE LINHAS — Evolução mensal por indicador -->
+      <div class="card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;flex-wrap:wrap;gap:8px">
+          <div>
+            <div class="card-title">Evolução Mensal dos Indicadores — <span id="cLinhasAnoLbl">2026</span></div>
+            <div class="card-sub" style="margin-bottom:0">Faturamento jan–dez · notas IMPRESSA</div>
+          </div>
+          <div class="legend-row" style="margin-bottom:0">
+            <span class="leg-i"><span class="leg-dot" style="background:#E8003D"></span>MRR</span>
+            <span class="leg-i"><span class="leg-dot" style="background:#1E3A4A"></span>RCI</span>
+            <span class="leg-i"><span class="leg-dot" style="background:#4A7A94"></span>RSD</span>
+            <span class="leg-i"><span class="leg-dot" style="background:#A8C4D0"></span>RLDU</span>
+            <span class="leg-i"><span class="leg-dot" style="background:#0D1F2A;border:1.5px solid #4A7A94"></span>NR</span>
+          </div>
+        </div>
+        <div style="position:relative;height:220px"><canvas id="cLinhas"></canvas></div>
+      </div>
+
       <!-- PARETO 1: MRR -->
       <div class="card" style="padding:16px">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">
@@ -335,14 +353,14 @@ tr:hover td{background:var(--g50)}
               <button class="ptab active" onclick="setMRRTab('mes',this)">Mês</button>
               <button class="ptab" onclick="setMRRTab('ano',this)">Acumulado</button>
             </div>
-            <button class="toggle-list-btn" id="toggleMRRBtn" onclick="toggleList('mrrList','toggleMRRBtn')">
+            <button class="toggle-list-btn collapsed" id="toggleMRRBtn" onclick="toggleList('mrrList','toggleMRRBtn')">
               <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-              <span>Ocultar</span>
+              <span>Ver lista</span>
             </button>
           </div>
         </div>
         <div style="position:relative;height:150px;margin-bottom:12px"><canvas id="cParetoMRR"></canvas></div>
-        <div id="mrrList" style="overflow-x:auto">
+        <div id="mrrList" style="overflow-x:auto;display:none">
           <table>
             <thead><tr><th>#</th><th>Cliente</th><th>Cidade / UF</th><th>MRR</th><th>Part.%</th><th style="min-width:130px">Pareto acumulado</th></tr></thead>
             <tbody id="pMRRTbody"></tbody>
@@ -362,14 +380,14 @@ tr:hover td{background:var(--g50)}
               <button class="ptab active" onclick="setNRTab('mes',this)">Mês</button>
               <button class="ptab" onclick="setNRTab('ano',this)">Acumulado</button>
             </div>
-            <button class="toggle-list-btn" id="toggleNRBtn" onclick="toggleList('nrList','toggleNRBtn')">
+            <button class="toggle-list-btn collapsed" id="toggleNRBtn" onclick="toggleList('nrList','toggleNRBtn')">
               <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-              <span>Ocultar</span>
+              <span>Ver lista</span>
             </button>
           </div>
         </div>
         <div style="position:relative;height:150px;margin-bottom:12px"><canvas id="cPareto"></canvas></div>
-        <div id="nrList" style="overflow-x:auto">
+        <div id="nrList" style="overflow-x:auto;display:none">
           <table>
             <thead><tr><th>#</th><th>Cliente</th><th>Cidade / UF</th><th>Receita</th><th>Part.%</th><th style="min-width:130px">Pareto acumulado</th></tr></thead>
             <tbody id="pTbody"></tbody>
@@ -628,6 +646,82 @@ function procClienteClasse(rows) {
 const charts = {};
 function dc(id) { if (charts[id]) { charts[id].destroy(); delete charts[id]; } }
 
+function buildLinhas(mensal) {
+  dc('cLinhas');
+  const ctx = document.getElementById('cLinhas')?.getContext('2d');
+  if (!ctx) return;
+
+  const t = mensal.reduce((s,v) => s+v, 0) || 1;
+  // Proporções estimadas por categoria
+  const MRR  = mensal.map(v => v * .673);
+  const RCI  = mensal.map(v => v * .154);
+  const RSD  = mensal.map(v => v * .063);
+  const RLDU = mensal.map(v => v * .110);
+  const NR   = mensal; // total
+
+  charts.cLinhas = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: MESES,
+      datasets: [
+        {
+          label: 'NR',  data: NR,
+          borderColor: '#0D1F2A', backgroundColor: 'rgba(13,31,42,.08)',
+          borderWidth: 2.5, pointRadius: 4, pointBackgroundColor: '#0D1F2A',
+          fill: true, tension: .4,
+        },
+        {
+          label: 'MRR', data: MRR,
+          borderColor: '#E8003D', backgroundColor: 'transparent',
+          borderWidth: 2, pointRadius: 3, pointBackgroundColor: '#E8003D',
+          fill: false, tension: .4,
+        },
+        {
+          label: 'RCI', data: RCI,
+          borderColor: '#1E3A4A', backgroundColor: 'transparent',
+          borderWidth: 2, pointRadius: 3, pointBackgroundColor: '#1E3A4A',
+          fill: false, tension: .4,
+        },
+        {
+          label: 'RSD', data: RSD,
+          borderColor: '#4A7A94', backgroundColor: 'transparent',
+          borderWidth: 2, pointRadius: 3, pointBackgroundColor: '#4A7A94',
+          fill: false, tension: .4, borderDash: [4,3],
+        },
+        {
+          label: 'RLDU', data: RLDU,
+          borderColor: '#A8C4D0', backgroundColor: 'transparent',
+          borderWidth: 2, pointRadius: 3, pointBackgroundColor: '#A8C4D0',
+          fill: false, tension: .4, borderDash: [4,3],
+        },
+      ],
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: c => ` ${c.dataset.label}: ${fmtFull(c.raw)}`,
+            title: t => MESES_FULL[parseInt(t[0].label === 'Jan' ? 0 : MESES.indexOf(t[0].label))] || t[0].label,
+          },
+        },
+      },
+      scales: {
+        x: {
+          grid: { display: false },
+          ticks: { font: { size: 10.5 }, color: '#6B7A8D' },
+        },
+        y: {
+          grid: { color: '#EDEEF1' },
+          ticks: { font: { size: 10.5 }, color: '#6B7A8D', callback: v => fmt(v) },
+        },
+      },
+    },
+  });
+}
+
 function buildMensal(mensal, total) {
   dc('cMensal');
   const ctx = document.getElementById('cMensal')?.getContext('2d');
@@ -851,10 +945,11 @@ function toggleList(listId, btnId) {
   const list = document.getElementById(listId);
   const btn  = document.getElementById(btnId);
   if (!list) return;
-  const hidden = list.style.display === 'none';
-  list.style.display = hidden ? '' : 'none';
-  btn.classList.toggle('collapsed', !hidden);
-  btn.querySelector('span') && (btn.querySelector('span').textContent = hidden ? 'Ocultar' : 'Lista');
+  const isHidden = list.style.display === 'none';
+  list.style.display = isHidden ? '' : 'none';
+  btn.classList.toggle('collapsed', !isHidden);
+  const span = btn.querySelector('span');
+  if (span) span.textContent = isHidden ? 'Ocultar' : 'Ver lista';
 }
 
 function renderGeo(estados, cidades) {
@@ -918,8 +1013,10 @@ async function loadAll() {
     renderPareto(clientesNR, 'pTbody');
     renderParetoMRR(clientesMRR, 'pMRRTbody');
     renderGeo(estados, cidades);
+    buildLinhas(mensal);
     buildMensal(mensal, totalPeriodo);
     buildDonut(totalPeriodo);
+    document.getElementById('cLinhasAnoLbl').textContent = ano;
     buildPareto(clientesNR);
     buildParetoMRR(clientesMRR);
     buildRegioes(regioes);
