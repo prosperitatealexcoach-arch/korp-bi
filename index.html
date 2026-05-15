@@ -325,12 +325,30 @@ async function cubeQuery(cubeQ) {
   return d.data || d;
 }
 
-// ── BUILDERS DE QUERY REST ──────────────────────────────────
-// Filtro fixo: apenas notas com situação IMPRESSA
-const FILTRO_IMPRESSA = { member: 'FaturamentoStatusNotaFiscal.descricao', operator: 'equals', values: ['IMPRESSA'] };
+// ── FILTROS DE STATUS ─────────────────────────────────────────────────
+// UUID e3a0304d = IMPRESSA (validado via /diag-filtros em 15/05/2026)
+// FatoFaturamentoNotaFiscal → FaturamentoStatusNotaFiscal.descricao = 'IMPRESSA'
+// FatoFaturamentoProduto    → idFaturamentoStatusNotaFiscal = UUID
+const FILTRO_NF = {
+  member:   'FaturamentoStatusNotaFiscal.descricao',
+  operator: 'equals',
+  values:   ['IMPRESSA'],
+};
+const FILTRO_PROD = {
+  member:   'FatoFaturamentoProduto.idFaturamentoStatusNotaFiscal',
+  operator: 'equals',
+  values:   ['e3a0304d-688a-431c-9d99-78c5d5f34f0f'],
+};
 
-function filtersFor(mes, ano) {
-  const f = [FILTRO_IMPRESSA]; // sempre filtra por IMPRESSA
+function filtersNF(mes, ano) {
+  const f = [FILTRO_NF];
+  if (ano && ano !== '0') f.push({ member: 'DataEmissao.ano', operator: 'equals', values: [String(ano)] });
+  if (mes && mes !== '0') f.push({ member: 'DataEmissao.mes', operator: 'equals', values: [String(mes)] });
+  return f;
+}
+
+function filtersProd(mes, ano) {
+  const f = [FILTRO_PROD];
   if (ano && ano !== '0') f.push({ member: 'DataEmissao.ano', operator: 'equals', values: [String(ano)] });
   if (mes && mes !== '0') f.push({ member: 'DataEmissao.mes', operator: 'equals', values: [String(mes)] });
   return f;
@@ -342,7 +360,7 @@ const Q = {
     measures:   ['FatoFaturamentoNotaFiscal.valorTotalSum'],
     dimensions: ['DataEmissao.mes'],
     filters:    [
-      FILTRO_IMPRESSA,
+      FILTRO_NF,
       { member: 'DataEmissao.ano', operator: 'equals', values: [String(ano)] },
     ],
     order:      { 'DataEmissao.mes': 'asc' },
@@ -358,7 +376,7 @@ const Q = {
       'VendaCliente.descricaoEstado',
       'VendaCliente.descricaoCidade',
     ],
-    filters: filtersFor(mes, ano),
+    filters: filtersNF(mes, ano),
     limit:   50,
     order:   { 'FatoFaturamentoNotaFiscal.valorTotalSum': 'desc' },
   }),
@@ -367,7 +385,7 @@ const Q = {
   estado: (mes, ano) => ({
     measures:   ['FatoFaturamentoProduto.valorTotalSum'],
     dimensions: ['VendaCliente.codigoEstado', 'VendaCliente.descricaoEstado'],
-    filters: filtersFor(mes, ano),
+    filters: filtersProd(mes, ano),
     limit:   30,
     order:   { 'FatoFaturamentoProduto.valorTotalSum': 'desc' },
   }),
@@ -376,7 +394,7 @@ const Q = {
   cidade: (mes, ano) => ({
     measures:   ['FatoFaturamentoProduto.valorTotalSum'],
     dimensions: ['VendaCliente.descricaoCidade', 'VendaCliente.codigoEstado'],
-    filters: filtersFor(mes, ano),
+    filters: filtersProd(mes, ano),
     limit:   20,
     order:   { 'FatoFaturamentoProduto.valorTotalSum': 'desc' },
   }),
