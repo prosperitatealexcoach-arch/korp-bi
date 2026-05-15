@@ -67,7 +67,7 @@ select,input,button{font-family:var(--font)}
 .kpi{border-radius:var(--rl);padding:20px 20px 16px;position:relative;overflow:hidden;box-shadow:var(--shadow-md);transition:transform .15s,box-shadow .15s;border:none}
 .kpi:hover{transform:translateY(-2px);box-shadow:0 8px 16px rgba(0,0,0,.12)}
 /* Fundo colorido por tipo */
-.kpi.cr{background:linear-gradient(135deg,#E8003D 0%,#B8002E 100%)}
+.kpi.cr{background:linear-gradient(135deg,#152C3A 0%,#0D1F2A 100%)}
 .kpi.cb{background:linear-gradient(135deg,#1E3A4A 0%,#152C3A 100%)}
 .kpi.cg{background:linear-gradient(135deg,#2a4f63 0%,#1E3A4A 100%)}
 .kpi.cgray{background:linear-gradient(135deg,#4A5568 0%,#2D3748 100%)}
@@ -282,6 +282,10 @@ tr:hover td{background:var(--g50)}
           <div>
             <div class="nr-lbl">MRR — Receita Mensal Recorrente</div>
             <div class="nr-val" id="vMRR">—</div>
+            <div style="display:flex;align-items:center;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,.2)">
+              <span style="font-size:14px;font-weight:700;color:#fff" id="trendMRRval">—</span>
+              <span style="font-size:11px;color:rgba(255,255,255,.7)">vs mês anterior</span>
+            </div>
           </div>
           <div style="text-align:right">
             <div class="nr-meta">Meta +20% vs ano anterior</div>
@@ -462,11 +466,11 @@ function filtersProd(mes, ano) {
   return f;
 }
 
-// Para cubos sem join com FaturamentoStatusNotaFiscal (ex: FatoFinanceiroContaReceber)
-function filtersSemStatus(mes, ano) {
+// Para FatoFinanceiroContaReceber — filtra por DataRecebimento (pagamentos recebidos)
+function filtersCR(mes, ano) {
   const f = [];
-  if (ano && ano !== '0') f.push({ member: 'DataVencimento.ano', operator: 'equals', values: [String(ano)] });
-  if (mes && mes !== '0') f.push({ member: 'DataVencimento.mes', operator: 'equals', values: [String(mes)] });
+  if (ano && ano !== '0') f.push({ member: 'DataRecebimento.ano', operator: 'equals', values: [String(ano)] });
+  if (mes && mes !== '0') f.push({ member: 'DataRecebimento.mes', operator: 'equals', values: [String(mes)] });
   return f;
 }
 
@@ -515,9 +519,8 @@ const Q = {
     order:   { 'FatoFaturamentoProduto.valorTotalSum': 'desc' },
   }),
 
-  // Pareto MRR — FatoFinanceiroContaReceber por cliente
-  // IMPORTANTE: esse cubo NÃO tem join com FaturamentoStatusNotaFiscal
-  // então apenas filtramos por ano/mês, sem filtro de status
+  // Pareto MRR — usa FatoFinanceiroContaReceber filtrado por DataRecebimento
+  // Sem filtro de status (sem join disponível)
   paretoMRR: (mes, ano) => ({
     measures:   ['FatoFinanceiroContaReceber.valorLiquidoSum'],
     dimensions: [
@@ -526,7 +529,7 @@ const Q = {
       'VendaCliente.descricaoEstado',
       'VendaCliente.descricaoCidade',
     ],
-    filters: filtersSemStatus(mes, ano),
+    filters: filtersCR(mes, ano),
     limit:   50,
     order:   { 'FatoFinanceiroContaReceber.valorLiquidoSum': 'desc' },
   }),
@@ -676,8 +679,8 @@ function buildPareto(clientes) {
   const cumuls = clientes.map(c=>{ ac += total>0?c.receita/total*100:0; return Math.round(ac*10)/10; });
   charts.cPareto = new Chart(ctx, {
     data:{ labels: clientes.map(c=>c.nome.split(' ').slice(0,2).join(' ')), datasets:[
-      { type:'bar',  label:'Receita', data:clientes.map(c=>c.receita), backgroundColor:'#E8003D', borderRadius:3, yAxisID:'y' },
-      { type:'line', label:'Pareto %', data:cumuls, borderColor:'#1E3A4A', borderWidth:2, pointRadius:3, pointBackgroundColor:'#1E3A4A', fill:false, tension:.35, yAxisID:'y2' },
+      { type:'bar',  label:'Receita', data:clientes.map(c=>c.receita), backgroundColor:'#1E3A4A', borderRadius:3, yAxisID:'y' },
+      { type:'line', label:'Pareto %', data:cumuls, borderColor:'#4A7A94', borderWidth:2, pointRadius:3, pointBackgroundColor:'#4A7A94', fill:false, tension:.35, yAxisID:'y2' },
       { type:'line', label:'80%', data:clientes.map(()=>80), borderColor:'#A8C4D0', borderWidth:1.5, borderDash:[5,4], pointRadius:0, fill:false, yAxisID:'y2' },
     ]},
     options:{ responsive:true, maintainAspectRatio:false,
@@ -808,6 +811,19 @@ function renderKPIs(total, mensal, mes, ano) {
   setTrend('trendRCIval',  rci,   totalAnt ? totalAnt*.154 : null);
   setTrend('trendRSDval',  rsd,   totalAnt ? totalAnt*.063 : null);
   setTrend('trendRLDUval', rldu,  totalAnt ? totalAnt*.110 : null);
+
+  // Trend MRR no banner vermelho
+  const tMRR = document.getElementById('trendMRRval');
+  if (tMRR) {
+    const mrrAnt = totalAnt ? totalAnt * .673 : null;
+    if (!mrrAnt) { tMRR.textContent = '— sem período anterior'; tMRR.style.color='rgba(255,255,255,.6)'; }
+    else {
+      const pct = ((mrr - mrrAnt) / mrrAnt * 100);
+      const isUp = pct >= 0;
+      tMRR.style.color = isUp ? '#7FFFC4' : '#FFB3C1';
+      tMRR.textContent = (isUp ? '▲ +' : '▼ ') + Math.abs(pct).toFixed(1).replace('.',',') + '% vs mês anterior';
+    }
+  }
 
   // Banner MRR (destaque)
   const totalAnual = mensal.reduce((s,v)=>s+v,0);
