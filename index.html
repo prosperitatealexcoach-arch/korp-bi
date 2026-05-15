@@ -346,7 +346,7 @@ tr:hover td{background:var(--g50)}
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">
           <div>
             <div class="sh-title">Pareto MRR — Receita Recorrente por Cliente</div>
-            <div style="font-size:11px;color:var(--g600);margin-top:3px;font-weight:500">FatoFinanceiroContaReceber · Receita recorrente mensal</div>
+            <div style="font-size:11px;color:var(--g600);margin-top:3px;font-weight:500">FatoFaturamentoProduto · Conta RSV Mensalidade · notas IMPRESSA</div>
           </div>
           <div style="display:flex;gap:8px;align-items:center">
             <div class="ptabs">
@@ -485,30 +485,27 @@ function filtersProd(mes, ano) {
 }
 
 // Para FatoFinanceiroContaReceber — filtra por DataEmissao + conta gerencial
-// Contas gerenciais mapeadas (confirmado via /diag-mrr):
-//   MRR  = 'RSV Mensalidade'
-//   RCI  = 'RSV Serviço Consultoria' + 'RSV Projetos (implantação)'
-//   RSD  = 'RSV Serviço Desenvolvimento'
-//   RLDU = 'RSV LDU'
+// ── CONTAS GERENCIAIS (confirmado via /diag-fat — FatoFaturamentoProduto) ──
+// FatoFaturamentoProduto tem join com FinanceiroContaGerencial ✓
+// FatoFaturamentoNotaFiscal NÃO tem join com FinanceiroContaGerencial ✗
 const CONTA_MRR  = 'RSV Mensalidade';
-const CONTA_RCI  = ['RSV Serviço Consultoria','RSV Projetos (implantação)'];
+const CONTA_RCI  = ['RSV Serviço Consultoria', 'RSV Projetos (implantação)'];
 const CONTA_RSD  = 'RSV Serviço Desenvolvimento';
 const CONTA_RLDU = 'RSV LDU';
 
-function filtersCR(mes, ano, conta) {
-  const f = [];
+// Filtros para FatoFaturamentoProduto com conta gerencial
+// Usa FILTRO_PROD (UUID IMPRESSA) pois não há join com FaturamentoStatusNotaFiscal
+function filtersFAT(mes, ano, conta) {
+  const f = [FILTRO_PROD];
   if (ano && ano !== '0') f.push({ member: 'DataEmissao.ano', operator: 'equals', values: [String(ano)] });
   if (mes && mes !== '0') f.push({ member: 'DataEmissao.mes', operator: 'equals', values: [String(mes)] });
-  // Filtro de conta gerencial — isola o indicador correto
   if (conta) {
-    if (Array.isArray(conta)) {
-      f.push({ member: 'FinanceiroContaGerencial.descricao', operator: 'equals', values: conta });
-    } else {
-      f.push({ member: 'FinanceiroContaGerencial.descricao', operator: 'equals', values: [conta] });
-    }
+    f.push({
+      member: 'FinanceiroContaGerencial.descricao',
+      operator: 'equals',
+      values: Array.isArray(conta) ? conta : [conta],
+    });
   }
-  // Excluir clientes internos: apenas status Recebido ou A Receber
-  f.push({ member: 'FinanceiroContaReceberStatus.descricao', operator: 'equals', values: ['Recebido','A Receber'] });
   return f;
 }
 
@@ -557,71 +554,54 @@ const Q = {
     order:   { 'FatoFaturamentoProduto.valorTotalSum': 'desc' },
   }),
 
-  // Pareto MRR — FatoFinanceiroContaReceber filtrado por conta 'RSV Mensalidade'
-  // Conta gerencial confirmada via diagnóstico como a mensalidade recorrente (MRR)
+  // Pareto MRR — FatoFaturamentoProduto + conta RSV Mensalidade (faturamento emitido)
   paretoMRR: (mes, ano) => ({
-    measures:   ['FatoFinanceiroContaReceber.valorLiquidoSum'],
+    measures:   ['FatoFaturamentoProduto.valorTotalSum'],
     dimensions: [
       'VendaCliente.razaoSocial',
       'VendaCliente.codigoEstado',
       'VendaCliente.descricaoEstado',
       'VendaCliente.descricaoCidade',
     ],
-    filters: filtersCR(mes, ano, CONTA_MRR),
+    filters: filtersFAT(mes, ano, CONTA_MRR),
     limit:   50,
-    order:   { 'FatoFinanceiroContaReceber.valorLiquidoSum': 'desc' },
+    order:   { 'FatoFaturamentoProduto.valorTotalSum': 'desc' },
   }),
 
-  // MRR mensal real — por conta gerencial RSV Mensalidade
+  // MRR mensal — FatoFaturamentoProduto + conta RSV Mensalidade (faturamento emitido)
   mensalMRR: (ano) => ({
-    measures:   ['FatoFinanceiroContaReceber.valorLiquidoSum'],
+    measures:   ['FatoFaturamentoProduto.valorTotalSum'],
     dimensions: ['DataEmissao.mes'],
-    filters: [
-      { member: 'DataEmissao.ano', operator: 'equals', values: [String(ano)] },
-      { member: 'FinanceiroContaGerencial.descricao', operator: 'equals', values: [CONTA_MRR] },
-      { member: 'FinanceiroContaReceberStatus.descricao', operator: 'equals', values: ['Recebido','A Receber'] },
-    ],
-    order: { 'DataEmissao.mes': 'asc' },
-    limit: 12,
+    filters:    filtersFAT('0', ano, CONTA_MRR),
+    order:      { 'DataEmissao.mes': 'asc' },
+    limit:      12,
   }),
 
-  // RCI mensal real — RSV Serviço Consultoria + RSV Projetos (implantação)
+  // RCI mensal — RSV Serviço Consultoria + RSV Projetos (implantação)
   mensalRCI: (ano) => ({
-    measures:   ['FatoFinanceiroContaReceber.valorLiquidoSum'],
+    measures:   ['FatoFaturamentoProduto.valorTotalSum'],
     dimensions: ['DataEmissao.mes'],
-    filters: [
-      { member: 'DataEmissao.ano', operator: 'equals', values: [String(ano)] },
-      { member: 'FinanceiroContaGerencial.descricao', operator: 'equals', values: CONTA_RCI },
-      { member: 'FinanceiroContaReceberStatus.descricao', operator: 'equals', values: ['Recebido','A Receber'] },
-    ],
-    order: { 'DataEmissao.mes': 'asc' },
-    limit: 12,
+    filters:    filtersFAT('0', ano, CONTA_RCI),
+    order:      { 'DataEmissao.mes': 'asc' },
+    limit:      12,
   }),
 
-  // RSD mensal real — RSV Serviço Desenvolvimento
+  // RSD mensal — RSV Serviço Desenvolvimento
   mensalRSD: (ano) => ({
-    measures:   ['FatoFinanceiroContaReceber.valorLiquidoSum'],
+    measures:   ['FatoFaturamentoProduto.valorTotalSum'],
     dimensions: ['DataEmissao.mes'],
-    filters: [
-      { member: 'DataEmissao.ano', operator: 'equals', values: [String(ano)] },
-      { member: 'FinanceiroContaGerencial.descricao', operator: 'equals', values: [CONTA_RSD] },
-      { member: 'FinanceiroContaReceberStatus.descricao', operator: 'equals', values: ['Recebido','A Receber'] },
-    ],
-    order: { 'DataEmissao.mes': 'asc' },
-    limit: 12,
+    filters:    filtersFAT('0', ano, CONTA_RSD),
+    order:      { 'DataEmissao.mes': 'asc' },
+    limit:      12,
   }),
 
-  // RLDU mensal real — RSV LDU
+  // RLDU mensal — RSV LDU
   mensalRLDU: (ano) => ({
-    measures:   ['FatoFinanceiroContaReceber.valorLiquidoSum'],
+    measures:   ['FatoFaturamentoProduto.valorTotalSum'],
     dimensions: ['DataEmissao.mes'],
-    filters: [
-      { member: 'DataEmissao.ano', operator: 'equals', values: [String(ano)] },
-      { member: 'FinanceiroContaGerencial.descricao', operator: 'equals', values: [CONTA_RLDU] },
-      { member: 'FinanceiroContaReceberStatus.descricao', operator: 'equals', values: ['Recebido','A Receber'] },
-    ],
-    order: { 'DataEmissao.mes': 'asc' },
-    limit: 12,
+    filters:    filtersFAT('0', ano, CONTA_RLDU),
+    order:      { 'DataEmissao.mes': 'asc' },
+    limit:      12,
   }),
 
   // Clientes por classe — usar VendaCliente.descricaoClasse (join confirmado)
@@ -644,12 +624,18 @@ function procMensal(rows) {
   return MESES.map((_, i) => m[i + 1] || 0);
 }
 
-// Processador genérico para FatoFinanceiroContaReceber agrupado por mês
+// Processador para FatoFaturamentoProduto agrupado por mês (MRR/RCI/RSD/RLDU)
 function procMensalCR(rows) {
   const m = {};
   (rows || []).forEach(r => {
     const idx = parseInt(r['DataEmissao.mes']);
-    if (idx >= 1 && idx <= 12) m[idx] = (m[idx] || 0) + (parseFloat(r['FatoFinanceiroContaReceber.valorLiquidoSum']) || 0);
+    if (idx >= 1 && idx <= 12) {
+      // Aceita tanto FatoFaturamentoProduto quanto FatoFinanceiroContaReceber
+      const val = parseFloat(r['FatoFaturamentoProduto.valorTotalSum'])
+               || parseFloat(r['FatoFinanceiroContaReceber.valorLiquidoSum'])
+               || 0;
+      m[idx] = (m[idx] || 0) + val;
+    }
   });
   return MESES.map((_, i) => m[i + 1] || 0);
 }
@@ -700,12 +686,13 @@ function procParetoMRR(rows) {
   const map = {};
   (rows || []).forEach(r => {
     const nome = r['VendaCliente.razaoSocial'] || 'Não identificado';
-    const val  = parseFloat(r['FatoFinanceiroContaReceber.valorLiquidoSum']) || 0;
-    if (val <= 0) return; // ignora linhas sem valor
+    // Usa FatoFaturamentoProduto.valorTotalSum (faturamento emitido, não financeiro)
+    const val  = parseFloat(r['FatoFaturamentoProduto.valorTotalSum']) || 0;
+    if (val <= 0) return;
     if (!map[nome]) map[nome] = {
       nome,
-      cidade: r['VendaCliente.descricaoCidade'] || '—',
-      uf:     r['VendaCliente.codigoEstado']    || '—',
+      cidade:  r['VendaCliente.descricaoCidade'] || '—',
+      uf:      r['VendaCliente.codigoEstado']    || '—',
       receita: 0,
     };
     map[nome].receita += val;
