@@ -326,8 +326,11 @@ async function cubeQuery(cubeQ) {
 }
 
 // ── BUILDERS DE QUERY REST ──────────────────────────────────
+// Filtro fixo: apenas notas com situação IMPRESSA
+const FILTRO_IMPRESSA = { member: 'FaturamentoStatusNotaFiscal.descricao', operator: 'equals', values: ['IMPRESSA'] };
+
 function filtersFor(mes, ano) {
-  const f = [];
+  const f = [FILTRO_IMPRESSA]; // sempre filtra por IMPRESSA
   if (ano && ano !== '0') f.push({ member: 'DataEmissao.ano', operator: 'equals', values: [String(ano)] });
   if (mes && mes !== '0') f.push({ member: 'DataEmissao.mes', operator: 'equals', values: [String(mes)] });
   return f;
@@ -338,7 +341,10 @@ const Q = {
   mensal: (ano) => ({
     measures:   ['FatoFaturamentoNotaFiscal.valorTotalSum'],
     dimensions: ['DataEmissao.mes'],
-    filters:    [{ member: 'DataEmissao.ano', operator: 'equals', values: [String(ano)] }],
+    filters:    [
+      FILTRO_IMPRESSA,
+      { member: 'DataEmissao.ano', operator: 'equals', values: [String(ano)] },
+    ],
     order:      { 'DataEmissao.mes': 'asc' },
     limit:      12,
   }),
