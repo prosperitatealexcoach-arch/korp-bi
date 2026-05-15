@@ -64,24 +64,32 @@ select,input,button{font-family:var(--font)}
 .sh-title::before{content:'';width:3px;height:14px;background:var(--red);border-radius:2px;flex-shrink:0}
 .sh-pill{font-size:11px;color:var(--navy);background:var(--g100);padding:4px 12px;border-radius:20px;border:1.5px solid var(--g200);font-weight:600}
 .kpi-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
-.kpi{background:var(--wht);border:1.5px solid var(--g200);border-radius:var(--rl);padding:20px 20px 16px;position:relative;overflow:hidden;box-shadow:var(--shadow);transition:box-shadow .15s}
-.kpi:hover{box-shadow:var(--shadow-md)}
-.kpi::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--kc,var(--g200));border-radius:var(--rl) 0 0 var(--rl)}
-.kpi.cr{--kc:var(--red)}.kpi.cb{--kc:var(--navy)}.kpi.cg{--kc:var(--g400)}
-.kpi-lbl{font-size:11px;font-weight:600;color:var(--g600);margin-bottom:10px;letter-spacing:.3px;text-transform:uppercase}
-.kpi-val{font-size:28px;font-weight:700;color:var(--blk);line-height:1;font-variant-numeric:tabular-nums;letter-spacing:-.5px}
-.kpi-sub{font-size:11px;color:var(--g400);margin-top:6px;font-weight:400}
+.kpi{border-radius:var(--rl);padding:20px 20px 16px;position:relative;overflow:hidden;box-shadow:var(--shadow-md);transition:transform .15s,box-shadow .15s;border:none}
+.kpi:hover{transform:translateY(-2px);box-shadow:0 8px 16px rgba(0,0,0,.12)}
+/* Fundo colorido por tipo */
+.kpi.cr{background:linear-gradient(135deg,#E8003D 0%,#B8002E 100%)}
+.kpi.cb{background:linear-gradient(135deg,#1E3A4A 0%,#152C3A 100%)}
+.kpi.cg{background:linear-gradient(135deg,#2a4f63 0%,#1E3A4A 100%)}
+.kpi.cgray{background:linear-gradient(135deg,#4A5568 0%,#2D3748 100%)}
+.kpi-lbl{font-size:10.5px;font-weight:700;color:rgba(255,255,255,.7);margin-bottom:10px;letter-spacing:.6px;text-transform:uppercase}
+.kpi-val{font-size:30px;font-weight:700;color:#FFFFFF;line-height:1;font-variant-numeric:tabular-nums;letter-spacing:-.5px}
+.kpi-sub{font-size:10.5px;color:rgba(255,255,255,.6);margin-top:6px;font-weight:400}
+.kpi-trend{display:flex;align-items:center;gap:5px;margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,.15)}
+.kpi-trend-val{font-size:12px;font-weight:700;color:#fff}
+.kpi-trend-lbl{font-size:10.5px;color:rgba(255,255,255,.6)}
+.kpi-trend-up .kpi-trend-val{color:#7FFFC4}
+.kpi-trend-dn .kpi-trend-val{color:#FFB3C1}
 .badge{display:inline-flex;align-items:center;gap:3px;font-size:10.5px;padding:3px 9px;border-radius:10px;margin-top:8px;font-weight:600}
-.b-up{background:var(--ok-bg);color:var(--ok)}.b-dn{background:var(--red-l);color:var(--red-d)}.b-nu{background:var(--g100);color:var(--g600)}
-.nr{background:var(--navy);border-radius:var(--rl);padding:20px 24px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;box-shadow:var(--shadow-md);border:1.5px solid var(--navy-l)}
-.nr-lbl{font-size:10px;color:#8AABB8;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:5px;font-weight:600}
-.nr-val{font-size:32px;font-weight:700;color:#FFFFFF;font-variant-numeric:tabular-nums;letter-spacing:-.5px}
-.nr-meta{font-size:11px;color:#8AABB8;margin-bottom:3px;font-weight:500}
-.nr-pct{font-size:20px;font-weight:700;color:#FF4D7D}
-.nr-acum{font-size:11px;color:#8AABB8;margin-top:4px}
-.prog-bg{height:6px;background:rgba(255,255,255,.12);border-radius:3px;overflow:hidden;margin-top:10px}
-.prog-fill{height:6px;background:var(--red);border-radius:3px;transition:width .5s}
-.prog-lbl{font-size:10px;color:#8AABB8;margin-top:5px;text-align:center;font-weight:500}
+.b-up{background:rgba(255,255,255,.2);color:#FFFFFF}.b-dn{background:rgba(255,255,255,.2);color:#FFB3C1}.b-nu{background:rgba(255,255,255,.15);color:rgba(255,255,255,.8)}
+.nr{background:linear-gradient(135deg,#E8003D 0%,#9B0026 100%);border-radius:var(--rl);padding:22px 28px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;box-shadow:0 6px 20px rgba(232,0,61,.35)}
+.nr-lbl{font-size:10px;color:rgba(255,255,255,.7);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:5px;font-weight:700}
+.nr-val{font-size:36px;font-weight:700;color:#FFFFFF;font-variant-numeric:tabular-nums;letter-spacing:-.5px;text-shadow:0 2px 8px rgba(0,0,0,.2)}
+.nr-meta{font-size:11px;color:rgba(255,255,255,.7);margin-bottom:3px;font-weight:500}
+.nr-pct{font-size:22px;font-weight:700;color:#FFFFFF}
+.nr-acum{font-size:11px;color:rgba(255,255,255,.7);margin-top:4px}
+.prog-bg{height:6px;background:rgba(255,255,255,.2);border-radius:3px;overflow:hidden;margin-top:10px}
+.prog-fill{height:6px;background:#FFFFFF;border-radius:3px;transition:width .5s;opacity:.9}
+.prog-lbl{font-size:10px;color:rgba(255,255,255,.7);margin-top:5px;text-align:center;font-weight:600}
 .card{background:var(--wht);border:1.5px solid var(--g200);border-radius:var(--rl);padding:18px;box-shadow:var(--shadow)}
 .card-title{font-size:13px;font-weight:700;color:var(--navy);margin-bottom:3px;letter-spacing:-.1px}
 .card-sub{font-size:11px;color:var(--g400);margin-bottom:12px;font-weight:400}
@@ -92,6 +100,10 @@ select,input,button{font-family:var(--font)}
 .ptabs{display:flex;gap:2px;background:var(--g100);border-radius:7px;padding:3px;width:fit-content}
 .ptab{padding:5px 14px;border-radius:5px;font-size:11.5px;cursor:pointer;color:var(--g600);font-weight:600;background:none;border:none;transition:all .1s}
 .ptab.active{background:var(--wht);color:var(--navy);box-shadow:0 1px 3px rgba(0,0,0,.1)}
+.toggle-list-btn{display:flex;align-items:center;gap:5px;padding:5px 12px;border-radius:6px;font-size:11.5px;cursor:pointer;color:var(--navy);font-weight:600;background:var(--g100);border:1.5px solid var(--g200);transition:all .1s}
+.toggle-list-btn:hover{background:var(--g200)}
+.toggle-list-btn svg{transition:transform .2s}
+.toggle-list-btn.collapsed svg{transform:rotate(-90deg)}
 table{width:100%;border-collapse:collapse;font-size:12px}
 th{background:var(--g100);padding:9px 12px;text-align:left;font-weight:700;font-size:10.5px;color:var(--navy);border-bottom:1.5px solid var(--g200);letter-spacing:.4px;text-transform:uppercase}
 th:not(:first-child){text-align:right}
@@ -222,18 +234,64 @@ tr:hover td{background:var(--g50)}
         <div class="sh-pill" id="pLabel">—</div>
       </div>
 
+      <!-- KPI CARDS: NR, RCI, RSD, RLDU -->
       <div class="kpi-grid">
-        <div class="kpi cr"><div class="kpi-lbl">MRR — Receita Recorrente</div><div class="kpi-val" id="vMRR">—</div><div class="kpi-sub">Contratos recorrentes ativos</div><div class="badge b-nu" id="bMRR">período atual</div></div>
-        <div class="kpi cb blurrable" id="cRCI" data-msg="Acesso restrito"><div class="blur-me"><div class="kpi-lbl">RCI — Consultoria &amp; Implantação</div><div class="kpi-val" id="vRCI">—</div><div class="kpi-sub">Novos contratos + consultoria</div><div class="badge b-nu" id="bRCI">período atual</div></div></div>
-        <div class="kpi cg"><div class="kpi-lbl">RSD — Serviços de Desenvolvimento</div><div class="kpi-val" id="vRSD">—</div><div class="kpi-sub">Melhorias para clientes</div><div class="badge b-nu" id="bRSD">período atual</div></div>
-        <div class="kpi cg"><div class="kpi-lbl">RLDU — Licença de Uso</div><div class="kpi-val" id="vRLDU">—</div><div class="kpi-sub">Licenças recorrentes</div><div class="badge b-nu" id="bRLDU">período atual</div></div>
+        <div class="kpi cr">
+          <div class="kpi-lbl">NR — Receita Líquida Total</div>
+          <div class="kpi-val" id="vNR">—</div>
+          <div class="kpi-sub">Faturamento notas IMPRESSA</div>
+          <div class="kpi-trend" id="trendNR">
+            <span class="kpi-trend-val" id="trendNRval">—</span>
+            <span class="kpi-trend-lbl">vs mês anterior</span>
+          </div>
+        </div>
+        <div class="kpi cb blurrable" id="cRCI" data-msg="Acesso restrito">
+          <div class="blur-me">
+            <div class="kpi-lbl">RCI — Consultoria &amp; Implantação</div>
+            <div class="kpi-val" id="vRCI">—</div>
+            <div class="kpi-sub">Novos contratos + consultoria</div>
+            <div class="kpi-trend" id="trendRCI">
+              <span class="kpi-trend-val" id="trendRCIval">—</span>
+              <span class="kpi-trend-lbl">vs mês anterior</span>
+            </div>
+          </div>
+        </div>
+        <div class="kpi cg">
+          <div class="kpi-lbl">RSD — Serviços de Desenvolvimento</div>
+          <div class="kpi-val" id="vRSD">—</div>
+          <div class="kpi-sub">Melhorias para clientes</div>
+          <div class="kpi-trend" id="trendRSD">
+            <span class="kpi-trend-val" id="trendRSDval">—</span>
+            <span class="kpi-trend-lbl">vs mês anterior</span>
+          </div>
+        </div>
+        <div class="kpi cgray">
+          <div class="kpi-lbl">RLDU — Licença de Uso</div>
+          <div class="kpi-val" id="vRLDU">—</div>
+          <div class="kpi-sub">Licenças recorrentes</div>
+          <div class="kpi-trend" id="trendRLDU">
+            <span class="kpi-trend-val" id="trendRLDUval">—</span>
+            <span class="kpi-trend-lbl">vs mês anterior</span>
+          </div>
+        </div>
       </div>
 
+      <!-- MRR DESTAQUE — banner vermelho -->
       <div class="nr blurrable" id="cNR" data-msg="Acesso restrito — Diretoria">
-        <div class="blur-me" style="display:flex;align-items:center;justify-content:space-between;width:100%;gap:16px;flex-wrap:wrap">
-          <div><div class="nr-lbl">NR — Receita Líquida Total</div><div class="nr-val" id="vNR">—</div></div>
-          <div style="text-align:right"><div class="nr-meta">Meta +15% vs ano anterior</div><div class="nr-pct" id="vNRpct">—</div><div class="nr-acum" id="vNRacum">—</div></div>
-          <div style="width:130px"><div class="prog-bg"><div class="prog-fill" id="progFill" style="width:0%"></div></div><div class="prog-lbl" id="progLbl">—</div></div>
+        <div class="blur-me" style="display:flex;align-items:center;justify-content:space-between;width:100%;gap:20px;flex-wrap:wrap">
+          <div>
+            <div class="nr-lbl">MRR — Receita Mensal Recorrente</div>
+            <div class="nr-val" id="vMRR">—</div>
+          </div>
+          <div style="text-align:right">
+            <div class="nr-meta">Meta +20% vs ano anterior</div>
+            <div class="nr-pct" id="vNRpct">—</div>
+            <div class="nr-acum" id="vNRacum">—</div>
+          </div>
+          <div style="width:140px">
+            <div class="prog-bg"><div class="prog-fill" id="progFill" style="width:0%"></div></div>
+            <div class="prog-lbl" id="progLbl">—</div>
+          </div>
         </div>
       </div>
 
@@ -261,19 +319,53 @@ tr:hover td{background:var(--g50)}
         </div>
       </div>
 
+      <!-- PARETO 1: MRR -->
       <div class="card" style="padding:16px">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">
           <div>
-            <div class="sh-title">Pareto de Clientes — Receita &amp; Participação</div>
-            <div style="font-size:11px;color:var(--g600);margin-top:3px;font-weight:500">Apenas notas IMPRESSA · FatoFaturamentoNotaFiscal × VendaCliente</div>
+            <div class="sh-title">Pareto MRR — Receita Recorrente por Cliente</div>
+            <div style="font-size:11px;color:var(--g600);margin-top:3px;font-weight:500">FatoFinanceiroContaReceber · Receita recorrente mensal</div>
           </div>
-          <div class="ptabs">
-            <button class="ptab active" onclick="setParetoTab('mes',this)">Mês</button>
-            <button class="ptab" onclick="setParetoTab('ano',this)">Acumulado</button>
+          <div style="display:flex;gap:8px;align-items:center">
+            <div class="ptabs">
+              <button class="ptab active" onclick="setMRRTab('mes',this)">Mês</button>
+              <button class="ptab" onclick="setMRRTab('ano',this)">Acumulado</button>
+            </div>
+            <button class="toggle-list-btn" id="toggleMRRBtn" onclick="toggleList('mrrList','toggleMRRBtn')">
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <span>Ocultar</span>
+            </button>
           </div>
         </div>
-        <div style="position:relative;height:140px;margin-bottom:12px"><canvas id="cPareto"></canvas></div>
-        <div style="overflow-x:auto">
+        <div style="position:relative;height:150px;margin-bottom:12px"><canvas id="cParetoMRR"></canvas></div>
+        <div id="mrrList" style="overflow-x:auto">
+          <table>
+            <thead><tr><th>#</th><th>Cliente</th><th>Cidade / UF</th><th>MRR</th><th>Part.%</th><th style="min-width:130px">Pareto acumulado</th></tr></thead>
+            <tbody id="pMRRTbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- PARETO 2: NR (receita total) -->
+      <div class="card" style="padding:16px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+          <div>
+            <div class="sh-title">Pareto NR — Receita Total por Cliente</div>
+            <div style="font-size:11px;color:var(--g600);margin-top:3px;font-weight:500">Apenas notas IMPRESSA · FatoFaturamentoNotaFiscal × VendaCliente</div>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <div class="ptabs">
+              <button class="ptab active" onclick="setNRTab('mes',this)">Mês</button>
+              <button class="ptab" onclick="setNRTab('ano',this)">Acumulado</button>
+            </div>
+            <button class="toggle-list-btn" id="toggleNRBtn" onclick="toggleList('nrList','toggleNRBtn')">
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <span>Ocultar</span>
+            </button>
+          </div>
+        </div>
+        <div style="position:relative;height:150px;margin-bottom:12px"><canvas id="cPareto"></canvas></div>
+        <div id="nrList" style="overflow-x:auto">
           <table>
             <thead><tr><th>#</th><th>Cliente</th><th>Cidade / UF</th><th>Receita</th><th>Part.%</th><th style="min-width:130px">Pareto acumulado</th></tr></thead>
             <tbody id="pTbody"></tbody>
@@ -290,6 +382,16 @@ tr:hover td{background:var(--g50)}
         <div class="card-title">Receita por Região Geográfica</div>
         <div class="card-sub">Agrupamento por região do Brasil</div>
         <div style="position:relative;height:160px"><canvas id="cRegiao"></canvas></div>
+      </div>
+
+      <!-- CLIENTES POR CLASSE -->
+      <div class="card">
+        <div class="card-title">Clientes por Classe</div>
+        <div class="card-sub">Distribuição da carteira por classificação de cliente</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:center">
+          <div style="position:relative;height:200px"><canvas id="cClienteClasse"></canvas></div>
+          <div id="classeList" style="display:flex;flex-direction:column;gap:8px"></div>
+        </div>
       </div>
 
       <div style="font-size:11px;color:var(--g600);text-align:right;padding-bottom:8px;font-weight:500">
@@ -404,6 +506,29 @@ const Q = {
     limit:   20,
     order:   { 'FatoFaturamentoProduto.valorTotalSum': 'desc' },
   }),
+
+  // Pareto MRR — FatoFinanceiroContaReceber por cliente (receita recorrente)
+  paretoMRR: (mes, ano) => ({
+    measures:   ['FatoFinanceiroContaReceber.valorLiquidoSum'],
+    dimensions: [
+      'VendaCliente.razaoSocial',
+      'VendaCliente.codigoEstado',
+      'VendaCliente.descricaoEstado',
+      'VendaCliente.descricaoCidade',
+    ],
+    filters: filtersNF(mes, ano),
+    limit:   50,
+    order:   { 'FatoFinanceiroContaReceber.valorLiquidoSum': 'desc' },
+  }),
+
+  // Clientes por classe
+  clienteClasse: (mes, ano) => ({
+    measures:   ['FatoFaturamentoNotaFiscal.count'],
+    dimensions: ['VendaClienteClasse.descricao'],
+    filters: filtersNF(mes, ano),
+    limit:   20,
+    order:   { 'FatoFaturamentoNotaFiscal.count': 'desc' },
+  }),
 };
 
 // ── PROCESSADORES ──────────────────────────────────────────
@@ -456,6 +581,24 @@ function procRegioes(estados) {
   estados.forEach(e => { for (const [reg, ufs] of Object.entries(REGIOES)) if (ufs.includes(e.uf)) { r[reg] = (r[reg] || 0) + e.receita; break; } });
   const ord = ['Norte','Nordeste','Centro-Oeste','Sudeste','Sul'];
   return { labels: ord.filter(k => r[k]), data: ord.filter(k => r[k]).map(k => r[k]) };
+}
+
+function procParetoMRR(rows) {
+  const map = {};
+  (rows || []).forEach(r => {
+    const nome = r['VendaCliente.razaoSocial'] || 'Não identificado';
+    const val  = parseFloat(r['FatoFinanceiroContaReceber.valorLiquidoSum']) || 0;
+    if (!map[nome]) map[nome] = { nome, cidade: r['VendaCliente.descricaoCidade']||'—', uf: r['VendaCliente.codigoEstado']||'—', receita:0 };
+    map[nome].receita += val;
+  });
+  return Object.values(map).filter(c=>c.receita>0).sort((a,b)=>b.receita-a.receita).slice(0,PARETO_N).map((c,i)=>({...c,rank:i+1}));
+}
+
+function procClienteClasse(rows) {
+  return (rows||[])
+    .map(r=>({ classe: r['VendaClienteClasse.descricao']||'Não classificado', count: parseInt(r['FatoFaturamentoNotaFiscal.count'])||0 }))
+    .filter(r=>r.count>0)
+    .sort((a,b)=>b.count-a.count);
 }
 
 // ── GRÁFICOS ───────────────────────────────────────────────
@@ -528,6 +671,71 @@ function buildPareto(clientes) {
   });
 }
 
+function buildParetoMRR(clientes) {
+  dc('cParetoMRR');
+  const ctx = document.getElementById('cParetoMRR')?.getContext('2d');
+  if (!ctx || !clientes.length) return;
+  const total = clientes.reduce((s,c)=>s+c.receita,0);
+  let ac = 0;
+  const cumuls = clientes.map(c=>{ ac+=total>0?c.receita/total*100:0; return Math.round(ac*10)/10; });
+  charts.cParetoMRR = new Chart(ctx, {
+    data:{ labels: clientes.map(c=>c.nome.split(' ').slice(0,2).join(' ')), datasets:[
+      { type:'bar',  label:'MRR', data:clientes.map(c=>c.receita), backgroundColor:'#E8003D', borderRadius:3, yAxisID:'y' },
+      { type:'line', label:'Pareto %', data:cumuls, borderColor:'#1E3A4A', borderWidth:2, pointRadius:3, pointBackgroundColor:'#1E3A4A', fill:false, tension:.35, yAxisID:'y2' },
+      { type:'line', label:'80%', data:clientes.map(()=>80), borderColor:'#A8C4D0', borderWidth:1.5, borderDash:[5,4], pointRadius:0, fill:false, yAxisID:'y2' },
+    ]},
+    options:{ responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false}, tooltip:{callbacks:{label:c=>c.dataset.label==='MRR'?`MRR: ${fmtFull(c.raw)}`:c.dataset.label==='80%'?null:`Acumulado: ${c.raw}%`}} },
+      scales:{
+        x:{grid:{display:false},ticks:{font:{size:9},color:'#6B7A8D',maxRotation:30}},
+        y:{position:'left',grid:{color:'#EDEEF1'},ticks:{font:{size:9},color:'#6B7A8D',callback:v=>fmt(v)}},
+        y2:{position:'right',min:0,max:100,grid:{display:false},ticks:{font:{size:9},color:'#6B7A8D',callback:v=>v+'%'}},
+      }
+    },
+  });
+}
+
+function renderParetoMRR(data, tbodyId) {
+  const total = data.reduce((s,c)=>s+c.receita,0); let ac=0;
+  const tbody = document.getElementById(tbodyId); tbody.innerHTML='';
+  if (!data.length) { tbody.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--g400);padding:20px">Sem dados</td></tr>'; return; }
+  data.forEach(c => {
+    const pct = total>0?c.receita/total*100:0; ac+=pct;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td style="font-size:11px;color:var(--g400)">${c.rank}</td><td style="font-weight:600;color:var(--navy)">${c.nome}</td><td style="color:var(--g600)">${c.cidade} / ${c.uf}</td><td style="font-weight:700;color:var(--red);font-variant-numeric:tabular-nums">${fmtFull(c.receita)}</td><td style="font-weight:600">${pct.toFixed(1)}%</td><td><div class="pb-wrap"><div class="pb" style="width:${Math.min(ac,100)}%"></div></div><div class="pc">${ac.toFixed(1)}% acumulado</div></td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+function buildClienteClasse(dados) {
+  dc('cClienteClasse');
+  const ctx = document.getElementById('cClienteClasse')?.getContext('2d');
+  if (!ctx || !dados.length) return;
+  const PALETTE = ['#E8003D','#1E3A4A','#4A7A94','#2a4f63','#A8C4D0','#6B8899','#D0E4ED','#9B0026'];
+  const labels = dados.map(d=>d.classe);
+  const values = dados.map(d=>d.count);
+  const total  = values.reduce((a,b)=>a+b,0);
+  const colors = dados.map((_,i)=>PALETTE[i%PALETTE.length]);
+  charts.cClienteClasse = new Chart(ctx, {
+    type: 'doughnut',
+    data: { labels, datasets:[{ data:values, backgroundColor:colors, borderWidth:2, borderColor:'#fff', hoverOffset:6 }] },
+    options: { responsive:true, maintainAspectRatio:false, cutout:'60%',
+      plugins:{ legend:{display:false}, tooltip:{callbacks:{label:c=>`${c.label}: ${c.raw} clientes (${(c.raw/total*100).toFixed(1)}%)`}} }
+    },
+  });
+  // Lista lateral
+  const list = document.getElementById('classeList');
+  if (list) {
+    list.innerHTML = dados.map((d,i) => `
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="width:10px;height:10px;border-radius:2px;background:${colors[i]};flex-shrink:0;display:inline-block"></span>
+        <span style="font-size:12px;font-weight:600;color:var(--navy);flex:1">${d.classe}</span>
+        <span style="font-size:12px;font-weight:700;color:var(--g800);font-variant-numeric:tabular-nums">${d.count}</span>
+        <span style="font-size:10.5px;color:var(--g400)">${(d.count/total*100).toFixed(1)}%</span>
+      </div>`).join('');
+  }
+}
+
 function buildRegioes(regioes) {
   dc('cRegiao');
   const ctx = document.getElementById('cRegiao')?.getContext('2d');
@@ -544,28 +752,56 @@ function buildRegioes(regioes) {
 }
 
 // ── RENDER ─────────────────────────────────────────────────
-let _pareto = { mes:[], ano:[] };
+let _pareto    = { mes:[], ano:[] };
+let _paretoMRR = { mes:[], ano:[] };
 
 function renderKPIs(total, mensal, mes, ano) {
   const mesIdx = parseInt(mes) - 1;
   document.getElementById('pLabel').textContent = (mes==='0'?'Acumulado':MESES_FULL[mesIdx]||'—') + ' / ' + ano;
   document.getElementById('cAnoLbl').textContent = ano;
-  document.getElementById('vMRR').textContent  = fmt(total*.673);
-  document.getElementById('vRCI').textContent  = fmt(total*.154);
-  document.getElementById('vRSD').textContent  = fmt(total*.063);
-  document.getElementById('vRLDU').textContent = fmt(total*.110);
+
+  // Valores do período
+  const mrr  = total * .673;
+  const rci  = total * .154;
+  const rsd  = total * .063;
+  const rldu = total * .110;
+  document.getElementById('vMRR').textContent  = fmt(mrr);
   document.getElementById('vNR').textContent   = fmt(total);
+  document.getElementById('vRCI').textContent  = fmt(rci);
+  document.getElementById('vRSD').textContent  = fmt(rsd);
+  document.getElementById('vRLDU').textContent = fmt(rldu);
+
+  // Trend vs mês anterior
+  function setTrend(elId, atual, anterior) {
+    const el = document.getElementById(elId);
+    if (!el || !anterior) { el.closest('.kpi-trend').className='kpi-trend'; el.textContent='—'; return; }
+    const pct = ((atual - anterior) / anterior * 100);
+    const isUp = pct >= 0;
+    el.closest('.kpi-trend').className = 'kpi-trend ' + (isUp ? 'kpi-trend-up' : 'kpi-trend-dn');
+    el.textContent = (isUp ? '▲ +' : '▼ ') + Math.abs(pct).toFixed(1).replace('.',',') + '%';
+  }
+
+  // Mês anterior (se disponível no array mensal)
+  const antIdx = mesIdx - 1;
+  const totalAnt = (mes !== '0' && antIdx >= 0) ? mensal[antIdx] : null;
+  setTrend('trendNRval',   total, totalAnt);
+  setTrend('trendRCIval',  rci,   totalAnt ? totalAnt*.154 : null);
+  setTrend('trendRSDval',  rsd,   totalAnt ? totalAnt*.063 : null);
+  setTrend('trendRLDUval', rldu,  totalAnt ? totalAnt*.110 : null);
+
+  // Banner MRR (destaque)
   const totalAnual = mensal.reduce((s,v)=>s+v,0);
-  const prog = Math.min(Math.round((totalAnual / (totalAnual * 1.15)) * 100), 100);
-  document.getElementById('vNRpct').textContent = '+' + prog + '% acum.';
-  document.getElementById('vNRacum').textContent = 'Acumulado ' + ano + ': ' + fmt(totalAnual);
+  const mrrAnual   = totalAnual * .673;
+  const prog = Math.min(Math.round((mrrAnual / (mrrAnual * 1.20)) * 100), 100);
+  document.getElementById('vNRpct').textContent   = '+' + prog + '% acum.';
+  document.getElementById('vNRacum').textContent  = 'MRR acumulado ' + ano + ': ' + fmt(mrrAnual);
   document.getElementById('progFill').style.width = prog + '%';
-  document.getElementById('progLbl').textContent = prog + '% da meta anual';
+  document.getElementById('progLbl').textContent  = prog + '% da meta anual';
 }
 
-function renderPareto(data) {
+function renderPareto(data, tbodyId='pTbody') {
   const total = data.reduce((s,c)=>s+c.receita,0); let ac=0;
-  const tbody = document.getElementById('pTbody'); tbody.innerHTML='';
+  const tbody = document.getElementById(tbodyId); if(!tbody)return; tbody.innerHTML='';
   if (!data.length) { tbody.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--g400);padding:20px">Sem dados para o período</td></tr>'; return; }
   data.forEach(c => {
     const pct = total>0?c.receita/total*100:0; ac+=pct;
@@ -573,6 +809,16 @@ function renderPareto(data) {
     tr.innerHTML = `<td style="font-size:11px;color:var(--g400)">${c.rank}</td><td style="font-weight:600;color:var(--navy)">${c.nome}</td><td style="color:var(--g600)">${c.cidade} / ${c.uf}</td><td style="font-weight:700;color:var(--red);font-variant-numeric:tabular-nums">${fmtFull(c.receita)}</td><td style="font-weight:600">${pct.toFixed(1)}%</td><td><div class="pb-wrap"><div class="pb" style="width:${Math.min(ac,100)}%"></div></div><div class="pc">${ac.toFixed(1)}% acumulado</div></td>`;
     tbody.appendChild(tr);
   });
+}
+
+function toggleList(listId, btnId) {
+  const list = document.getElementById(listId);
+  const btn  = document.getElementById(btnId);
+  if (!list) return;
+  const hidden = list.style.display === 'none';
+  list.style.display = hidden ? '' : 'none';
+  btn.classList.toggle('collapsed', !hidden);
+  btn.querySelector('span') && (btn.querySelector('span').textContent = hidden ? 'Ocultar' : 'Lista');
 }
 
 function renderGeo(estados, cidades) {
@@ -606,33 +852,42 @@ async function loadAll() {
     setOvMsg('Buscando faturamento mensal...');
     const rowsMensal = await cubeQuery(Q.mensal(ano));
 
-    setOvMsg('Buscando clientes e geo...');
-    const [rowsPareto, rowsEstado, rowsCidade] = await Promise.all([
+    setOvMsg('Buscando clientes, geo e classes...');
+    const [rowsPareto, rowsMRR, rowsEstado, rowsCidade, rowsClasse] = await Promise.all([
       cubeQuery(Q.pareto(mes, ano)),
+      cubeQuery(Q.paretoMRR(mes, ano)),
       cubeQuery(Q.estado(mes, ano)),
       cubeQuery(Q.cidade(mes, ano)),
+      cubeQuery(Q.clienteClasse(mes, ano)),
     ]);
 
     setOvMsg('Processando...');
-    const mensal   = procMensal(rowsMensal);
-    const clientes = procPareto(rowsPareto);
-    const estados  = procEstado(rowsEstado);
-    const cidades  = procCidade(rowsCidade);
-    const regioes  = procRegioes(estados);
+    const mensal        = procMensal(rowsMensal);
+    const clientesNR    = procPareto(rowsPareto);
+    const clientesMRR   = procParetoMRR(rowsMRR);
+    const estados       = procEstado(rowsEstado);
+    const cidades       = procCidade(rowsCidade);
+    const regioes       = procRegioes(estados);
+    const classes       = procClienteClasse(rowsClasse);
 
-    const mesIdx      = parseInt(mes) - 1;
+    const mesIdx       = parseInt(mes) - 1;
     const totalPeriodo = mes==='0' ? mensal.reduce((s,v)=>s+v,0) : mensal[mesIdx] || 0;
 
-    _pareto.mes = clientes;
-    _pareto.ano = clientes;
+    _pareto.mes = clientesNR;
+    _pareto.ano = clientesNR;
+    _paretoMRR.mes = clientesMRR;
+    _paretoMRR.ano = clientesMRR;
 
     renderKPIs(totalPeriodo, mensal, mes, ano);
-    renderPareto(clientes);
+    renderPareto(clientesNR, 'pTbody');
+    renderParetoMRR(clientesMRR, 'pMRRTbody');
     renderGeo(estados, cidades);
     buildMensal(mensal, totalPeriodo);
     buildDonut(totalPeriodo);
-    buildPareto(clientes);
+    buildPareto(clientesNR);
+    buildParetoMRR(clientesMRR);
     buildRegioes(regioes);
+    buildClienteClasse(classes);
 
     document.getElementById('lastUpdate').textContent = 'Atualizado: ' + new Date().toLocaleString('pt-BR');
     setStatus('ok','API Conectada');
@@ -647,11 +902,20 @@ async function loadAll() {
   }
 }
 
-function setParetoTab(tab,btn) {
-  document.querySelectorAll('.ptab').forEach(b=>b.classList.remove('active'));
+function setParetoTab(tab,btn) { return setNRTab(tab,btn); }
+
+function setNRTab(tab,btn) {
+  btn.closest('.ptabs').querySelectorAll('.ptab').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
-  renderPareto(_pareto[tab]||[]);
+  renderPareto(_pareto[tab]||[], 'pTbody');
   buildPareto(_pareto[tab]||[]);
+}
+
+function setMRRTab(tab,btn) {
+  btn.closest('.ptabs').querySelectorAll('.ptab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderParetoMRR(_paretoMRR[tab]||[], 'pMRRTbody');
+  buildParetoMRR(_paretoMRR[tab]||[]);
 }
 
 const ROLE_MAP = { diretoria:{av:'DI',blur:[]}, gerencia:{av:'GE',blur:['cNR']}, analista:{av:'AN',blur:['cNR','cRCI']} };
