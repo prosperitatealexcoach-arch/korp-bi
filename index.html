@@ -462,6 +462,14 @@ function filtersProd(mes, ano) {
   return f;
 }
 
+// Para cubos sem join com FaturamentoStatusNotaFiscal (ex: FatoFinanceiroContaReceber)
+function filtersSemStatus(mes, ano) {
+  const f = [];
+  if (ano && ano !== '0') f.push({ member: 'DataVencimento.ano', operator: 'equals', values: [String(ano)] });
+  if (mes && mes !== '0') f.push({ member: 'DataVencimento.mes', operator: 'equals', values: [String(mes)] });
+  return f;
+}
+
 const Q = {
   // Receita total por mês — agrupado por DataEmissao.mes
   mensal: (ano) => ({
@@ -507,7 +515,9 @@ const Q = {
     order:   { 'FatoFaturamentoProduto.valorTotalSum': 'desc' },
   }),
 
-  // Pareto MRR — FatoFinanceiroContaReceber por cliente (receita recorrente)
+  // Pareto MRR — FatoFinanceiroContaReceber por cliente
+  // IMPORTANTE: esse cubo NÃO tem join com FaturamentoStatusNotaFiscal
+  // então apenas filtramos por ano/mês, sem filtro de status
   paretoMRR: (mes, ano) => ({
     measures:   ['FatoFinanceiroContaReceber.valorLiquidoSum'],
     dimensions: [
@@ -516,15 +526,15 @@ const Q = {
       'VendaCliente.descricaoEstado',
       'VendaCliente.descricaoCidade',
     ],
-    filters: filtersNF(mes, ano),
+    filters: filtersSemStatus(mes, ano),
     limit:   50,
     order:   { 'FatoFinanceiroContaReceber.valorLiquidoSum': 'desc' },
   }),
 
-  // Clientes por classe
+  // Clientes por classe — usar VendaCliente.descricaoClasse (join confirmado)
   clienteClasse: (mes, ano) => ({
     measures:   ['FatoFaturamentoNotaFiscal.count'],
-    dimensions: ['VendaClienteClasse.descricao'],
+    dimensions: ['VendaCliente.descricaoClasse'],
     filters: filtersNF(mes, ano),
     limit:   20,
     order:   { 'FatoFaturamentoNotaFiscal.count': 'desc' },
@@ -588,15 +598,25 @@ function procParetoMRR(rows) {
   (rows || []).forEach(r => {
     const nome = r['VendaCliente.razaoSocial'] || 'Não identificado';
     const val  = parseFloat(r['FatoFinanceiroContaReceber.valorLiquidoSum']) || 0;
-    if (!map[nome]) map[nome] = { nome, cidade: r['VendaCliente.descricaoCidade']||'—', uf: r['VendaCliente.codigoEstado']||'—', receita:0 };
+    if (val <= 0) return; // ignora linhas sem valor
+    if (!map[nome]) map[nome] = {
+      nome,
+      cidade: r['VendaCliente.descricaoCidade'] || '—',
+      uf:     r['VendaCliente.codigoEstado']    || '—',
+      receita: 0,
+    };
     map[nome].receita += val;
   });
-  return Object.values(map).filter(c=>c.receita>0).sort((a,b)=>b.receita-a.receita).slice(0,PARETO_N).map((c,i)=>({...c,rank:i+1}));
+  return Object.values(map)
+    .filter(c => c.receita > 0)
+    .sort((a,b) => b.receita - a.receita)
+    .slice(0, PARETO_N)
+    .map((c,i) => ({...c, rank: i+1}));
 }
 
 function procClienteClasse(rows) {
   return (rows||[])
-    .map(r=>({ classe: r['VendaClienteClasse.descricao']||'Não classificado', count: parseInt(r['FatoFaturamentoNotaFiscal.count'])||0 }))
+    .map(r=>({ classe: r['VendaCliente.descricaoClasse']||'Sem classificação', count: parseInt(r['FatoFaturamentoNotaFiscal.count'])||0 }))
     .filter(r=>r.count>0)
     .sort((a,b)=>b.count-a.count);
 }
