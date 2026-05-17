@@ -622,28 +622,37 @@ function filtersFAT(mes, ano, conta) {
 const Q = {
   // Receita total por mês — agrupado por DataEmissao.mes
   mensal: (ano) => ({
-    measures:   ['FatoFaturamentoNotaFiscal.valorTotalSum'],
-    dimensions: ['DataEmissao.mes'],
-    filters:    [
+    // Usa valorTotal (dimension) em vez de valorTotalSum (measure)
+    // pois o cubo tem duplicação estrutural que infla o Sum
+    // Agrupa por mes + idFaturamentoNotaFiscal + valorTotal para deduplicar
+    measures:   ['FatoFaturamentoNotaFiscal.count'],
+    dimensions: [
+      'DataEmissao.mes',
+      'FatoFaturamentoNotaFiscal.idFaturamentoNotaFiscal',
+      'FatoFaturamentoNotaFiscal.valorTotal',
+    ],
+    filters: [
       FILTRO_NF,
       { member: 'DataEmissao.ano', operator: 'equals', values: [String(ano)] },
     ],
-    order:      { 'DataEmissao.mes': 'asc' },
-    limit:      12,
+    order: { 'DataEmissao.mes': 'asc' },
+    limit: 5000,
   }),
 
   // Pareto — receita por cliente
   pareto: (mes, ano) => ({
-    measures:   ['FatoFaturamentoNotaFiscal.valorTotalSum'],
+    measures:   ['FatoFaturamentoNotaFiscal.count'],
     dimensions: [
+      'FatoFaturamentoNotaFiscal.idFaturamentoNotaFiscal',
+      'FatoFaturamentoNotaFiscal.valorTotal',
       'VendaCliente.razaoSocial',
       'VendaCliente.codigoEstado',
       'VendaCliente.descricaoEstado',
       'VendaCliente.descricaoCidade',
     ],
     filters: filtersNF(mes, ano),
-    limit:   50,
-    order:   { 'FatoFaturamentoNotaFiscal.valorTotalSum': 'desc' },
+    limit:   5000,
+    order:   { 'FatoFaturamentoNotaFiscal.valorTotal': 'desc' },
   }),
 
   // Por estado
@@ -716,20 +725,32 @@ const Q = {
 
   // Clientes por classe — usar VendaCliente.descricaoClasse (join confirmado)
   clienteClasse: (mes, ano) => ({
+    // idFaturamentoNotaFiscal para deduplicar notas duplicadas no cubo
     measures:   ['FatoFaturamentoNotaFiscal.count'],
-    dimensions: ['VendaCliente.descricaoClasse'],
+    dimensions: [
+      'VendaCliente.descricaoClasse',
+      'FatoFaturamentoNotaFiscal.idFaturamentoNotaFiscal',
+    ],
     filters: filtersNF(mes, ano),
-    limit:   20,
+    limit:   50000,
     order:   { 'FatoFaturamentoNotaFiscal.count': 'desc' },
   }),
 };
 
 // ── PROCESSADORES ──────────────────────────────────────────
 function procMensal(rows) {
+  // Usa valorTotal (dimension) agrupado por idFaturamentoNotaFiscal
+  // para evitar duplicação do cubo — cada nota é somada uma única vez
+  const notasVistas = new Set();
   const m = {};
   (rows || []).forEach(r => {
     const idx = parseInt(r['DataEmissao.mes']);
-    if (idx >= 1 && idx <= 12) m[idx] = (m[idx] || 0) + (parseFloat(r['FatoFaturamentoNotaFiscal.valorTotalSum']) || 0);
+    const id  = r['FatoFaturamentoNotaFiscal.idFaturamentoNotaFiscal'];
+    const val = parseFloat(r['FatoFaturamentoNotaFiscal.valorTotal']) || 0;
+    if (idx >= 1 && idx <= 12 && id && !notasVistas.has(id)) {
+      notasVistas.add(id);
+      m[idx] = (m[idx] || 0) + val;
+    }
   });
   return MESES.map((_, i) => m[i + 1] || 0);
 }
@@ -751,10 +772,15 @@ function procMensalCR(rows) {
 }
 
 function procPareto(rows) {
+  // Deduplica por idFaturamentoNotaFiscal antes de somar por cliente
+  const notasVistas = new Set();
   const map = {};
   (rows || []).forEach(r => {
+    const id   = r['FatoFaturamentoNotaFiscal.idFaturamentoNotaFiscal'];
     const nome = r['VendaCliente.razaoSocial'] || 'Não identificado';
-    const val  = parseFloat(r['FatoFaturamentoNotaFiscal.valorTotalSum']) || 0;
+    const val  = parseFloat(r['FatoFaturamentoNotaFiscal.valorTotal']) || 0;
+    if (!id || notasVistas.has(id)) return;
+    notasVistas.add(id);
     if (!map[nome]) map[nome] = { nome, cidade: r['VendaCliente.descricaoCidade'] || '—', uf: r['VendaCliente.codigoEstado'] || '—', receita: 0 };
     map[nome].receita += val;
   });
@@ -815,10 +841,20 @@ function procParetoMRR(rows) {
 }
 
 function procClienteClasse(rows) {
-  return (rows||[])
-    .map(r=>({ classe: r['VendaCliente.descricaoClasse']||'Sem classificação', count: parseInt(r['FatoFaturamentoNotaFiscal.count'])||0 }))
-    .filter(r=>r.count>0)
-    .sort((a,b)=>b.count-a.count);
+  // Deduplica por idFaturamentoNotaFiscal antes de contar por classe
+  const notasVistas = new Set();
+  const map = {};
+  (rows || []).forEach(r => {
+    const id     = r['FatoFaturamentoNotaFiscal.idFaturamentoNotaFiscal'];
+    const classe = r['VendaCliente.descricaoClasse'] || 'Sem classificação';
+    if (!id || notasVistas.has(id)) return;
+    notasVistas.add(id);
+    map[classe] = (map[classe] || 0) + 1;
+  });
+  return Object.entries(map)
+    .map(([classe, count]) => ({ classe, count }))
+    .filter(r => r.count > 0)
+    .sort((a, b) => b.count - a.count);
 }
 
 // ── GRÁFICOS ───────────────────────────────────────────────
