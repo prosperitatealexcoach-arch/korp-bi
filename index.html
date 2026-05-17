@@ -945,7 +945,7 @@ function buildLinhas(mensal, mensalMRR, mensalRCI, mensalRSD, mensalRLDU) {
   });
 }
 
-function buildMensal(mensal, total) {
+function buildMensal(mensal, mensalMRR, mensalRCI, mensalRSD, mensalRLDU) {
   dc('cMensal');
   const ctx = document.getElementById('cMensal')?.getContext('2d');
   if (!ctx) return;
@@ -953,10 +953,10 @@ function buildMensal(mensal, total) {
   charts.cMensal = new Chart(ctx, {
     type: 'bar',
     data: { labels: MESES, datasets: [
-      { label:'MRR',  data: mensal.map(v => v * .673), backgroundColor:'#E8003D', borderRadius:3, stack:'s' },
-      { label:'RCI',  data: mensal.map(v => v * .154), backgroundColor:'#1E3A4A', borderRadius:3, stack:'s' },
-      { label:'RSD',  data: mensal.map(v => v * .063), backgroundColor:'#4A7A94', borderRadius:3, stack:'s' },
-      { label:'RLDU', data: mensal.map(v => v * .110), backgroundColor:'#A8C4D0', borderRadius:3, stack:'s' },
+      { label:'MRR',  data: mensalMRR,  backgroundColor:'#E8003D', borderRadius:3, stack:'s' },
+      { label:'RCI',  data: mensalRCI,  backgroundColor:'#1E3A4A', borderRadius:3, stack:'s' },
+      { label:'RSD',  data: mensalRSD,  backgroundColor:'#4A7A94', borderRadius:3, stack:'s' },
+      { label:'RLDU', data: mensalRLDU, backgroundColor:'#A8C4D0', borderRadius:3, stack:'s' },
     ]},
     options: { responsive:true, maintainAspectRatio:false,
       plugins:{ legend:{display:false}, tooltip:{callbacks:{label: c => ` ${c.dataset.label}: ${fmtFull(c.raw)}`}} },
@@ -1301,7 +1301,7 @@ async function loadAll() {
     renderParetoMRR(clientesMRR, 'pMRRTbody');
     renderGeo(estados, cidades);
     buildLinhas(mensal, mensalMRR, mensalRCI, mensalRSD, mensalRLDU);
-    buildMensal(mensal, totalPeriodo);
+    buildMensal(mensal, mensalMRR, mensalRCI, mensalRSD, mensalRLDU);
     buildDonut(mrrPeriodo, rciPeriodo, rsdPeriodo, rlduPeriodo);
     document.getElementById('cLinhasAnoLbl').textContent = ano;
     buildPareto(clientesNR);
