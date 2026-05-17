@@ -622,13 +622,14 @@ function filtersFAT(mes, ano, conta) {
 const Q = {
   // Receita total por mês — agrupado por DataEmissao.mes
   mensal: (ano) => ({
-    // Usa valorTotal (dimension) em vez de valorTotalSum (measure)
-    // pois o cubo tem duplicação estrutural que infla o Sum
-    // Agrupa por mes + idFaturamentoNotaFiscal + valorTotal para deduplicar
+    // valorTotal (dimension) por nota única
+    // Chave de dedup: idFaturamentoNotaFiscal + serie (mesmo número pode existir em séries diferentes)
     measures:   ['FatoFaturamentoNotaFiscal.count'],
     dimensions: [
       'DataEmissao.mes',
+      'DataEmissao.ano',
       'FatoFaturamentoNotaFiscal.idFaturamentoNotaFiscal',
+      'FaturamentoNotaFiscal.serie',
       'FatoFaturamentoNotaFiscal.valorTotal',
     ],
     filters: [
@@ -636,7 +637,7 @@ const Q = {
       { member: 'DataEmissao.ano', operator: 'equals', values: [String(ano)] },
     ],
     order: { 'DataEmissao.mes': 'asc' },
-    limit: 5000,
+    limit: 10000,
   }),
 
   // Pareto — receita por cliente
@@ -644,6 +645,9 @@ const Q = {
     measures:   ['FatoFaturamentoNotaFiscal.count'],
     dimensions: [
       'FatoFaturamentoNotaFiscal.idFaturamentoNotaFiscal',
+      'FaturamentoNotaFiscal.serie',
+      'DataEmissao.ano',
+      'DataEmissao.mes',
       'FatoFaturamentoNotaFiscal.valorTotal',
       'VendaCliente.razaoSocial',
       'VendaCliente.codigoEstado',
@@ -651,26 +655,25 @@ const Q = {
       'VendaCliente.descricaoCidade',
     ],
     filters: filtersNF(mes, ano),
-    limit:   5000,
+    limit:   10000,
     order:   { 'FatoFaturamentoNotaFiscal.valorTotal': 'desc' },
   }),
 
   // Por estado
   estado: (mes, ano) => ({
-    measures:   ['FatoFaturamentoProduto.valorTotalSum'],
-    dimensions: ['VendaCliente.codigoEstado', 'VendaCliente.descricaoEstado'],
+    measures:   ['FatoFaturamentoProduto.count'],
+    dimensions: ['FatoFaturamentoProduto.idNotaFiscal','FatoFaturamentoProduto.idProduto','FatoFaturamentoProduto.valorTotal','VendaCliente.codigoEstado','VendaCliente.descricaoEstado'],
     filters: filtersProd(mes, ano),
-    limit:   30,
-    order:   { 'FatoFaturamentoProduto.valorTotalSum': 'desc' },
+    limit:   50000,
+    order:   { 'FatoFaturamentoProduto.valorTotal': 'desc' },
   }),
 
-  // Por cidade
   cidade: (mes, ano) => ({
-    measures:   ['FatoFaturamentoProduto.valorTotalSum'],
-    dimensions: ['VendaCliente.descricaoCidade', 'VendaCliente.codigoEstado'],
+    measures:   ['FatoFaturamentoProduto.count'],
+    dimensions: ['FatoFaturamentoProduto.idNotaFiscal','FatoFaturamentoProduto.idProduto','FatoFaturamentoProduto.valorTotal','VendaCliente.descricaoCidade','VendaCliente.codigoEstado'],
     filters: filtersProd(mes, ano),
-    limit:   20,
-    order:   { 'FatoFaturamentoProduto.valorTotalSum': 'desc' },
+    limit:   50000,
+    order:   { 'FatoFaturamentoProduto.valorTotal': 'desc' },
   }),
 
   // Pareto MRR — FatoFaturamentoProduto + conta RSV Mensalidade (faturamento emitido)
@@ -689,47 +692,46 @@ const Q = {
 
   // MRR mensal — FatoFaturamentoProduto + conta RSV Mensalidade (faturamento emitido)
   mensalMRR: (ano) => ({
-    measures:   ['FatoFaturamentoProduto.valorTotalSum'],
-    dimensions: ['DataEmissao.mes'],
+    measures:   ['FatoFaturamentoProduto.count'],
+    dimensions: ['DataEmissao.mes','FatoFaturamentoProduto.idNotaFiscal','FatoFaturamentoProduto.idProduto','FatoFaturamentoProduto.valorTotal'],
     filters:    filtersFAT('0', ano, CONTA_MRR),
     order:      { 'DataEmissao.mes': 'asc' },
-    limit:      12,
+    limit:      50000,
   }),
 
-  // RCI mensal — RSV Serviço Consultoria + RSV Projetos (implantação)
   mensalRCI: (ano) => ({
-    measures:   ['FatoFaturamentoProduto.valorTotalSum'],
-    dimensions: ['DataEmissao.mes'],
+    measures:   ['FatoFaturamentoProduto.count'],
+    dimensions: ['DataEmissao.mes','FatoFaturamentoProduto.idNotaFiscal','FatoFaturamentoProduto.idProduto','FatoFaturamentoProduto.valorTotal'],
     filters:    filtersFAT('0', ano, CONTA_RCI),
     order:      { 'DataEmissao.mes': 'asc' },
-    limit:      12,
+    limit:      50000,
   }),
 
-  // RSD mensal — RSV Serviço Desenvolvimento
   mensalRSD: (ano) => ({
-    measures:   ['FatoFaturamentoProduto.valorTotalSum'],
-    dimensions: ['DataEmissao.mes'],
+    measures:   ['FatoFaturamentoProduto.count'],
+    dimensions: ['DataEmissao.mes','FatoFaturamentoProduto.idNotaFiscal','FatoFaturamentoProduto.idProduto','FatoFaturamentoProduto.valorTotal'],
     filters:    filtersFAT('0', ano, CONTA_RSD),
     order:      { 'DataEmissao.mes': 'asc' },
-    limit:      12,
+    limit:      50000,
   }),
 
-  // RLDU mensal — RSV LDU
   mensalRLDU: (ano) => ({
-    measures:   ['FatoFaturamentoProduto.valorTotalSum'],
-    dimensions: ['DataEmissao.mes'],
+    measures:   ['FatoFaturamentoProduto.count'],
+    dimensions: ['DataEmissao.mes','FatoFaturamentoProduto.idNotaFiscal','FatoFaturamentoProduto.idProduto','FatoFaturamentoProduto.valorTotal'],
     filters:    filtersFAT('0', ano, CONTA_RLDU),
     order:      { 'DataEmissao.mes': 'asc' },
-    limit:      12,
+    limit:      50000,
   }),
 
   // Clientes por classe — usar VendaCliente.descricaoClasse (join confirmado)
   clienteClasse: (mes, ano) => ({
-    // idFaturamentoNotaFiscal para deduplicar notas duplicadas no cubo
     measures:   ['FatoFaturamentoNotaFiscal.count'],
     dimensions: [
       'VendaCliente.descricaoClasse',
       'FatoFaturamentoNotaFiscal.idFaturamentoNotaFiscal',
+      'FaturamentoNotaFiscal.serie',
+      'DataEmissao.ano',
+      'DataEmissao.mes',
     ],
     filters: filtersNF(mes, ano),
     limit:   50000,
@@ -739,16 +741,19 @@ const Q = {
 
 // ── PROCESSADORES ──────────────────────────────────────────
 function procMensal(rows) {
-  // Usa valorTotal (dimension) agrupado por idFaturamentoNotaFiscal
-  // para evitar duplicação do cubo — cada nota é somada uma única vez
+  // Chave de deduplicação: idFaturamentoNotaFiscal + serie + ano + mes
+  // Mesmo número de nota pode existir em séries ou períodos diferentes = notas distintas
   const notasVistas = new Set();
   const m = {};
   (rows || []).forEach(r => {
-    const idx = parseInt(r['DataEmissao.mes']);
-    const id  = r['FatoFaturamentoNotaFiscal.idFaturamentoNotaFiscal'];
-    const val = parseFloat(r['FatoFaturamentoNotaFiscal.valorTotal']) || 0;
-    if (idx >= 1 && idx <= 12 && id && !notasVistas.has(id)) {
-      notasVistas.add(id);
+    const idx  = parseInt(r['DataEmissao.mes']);
+    const id   = r['FatoFaturamentoNotaFiscal.idFaturamentoNotaFiscal'];
+    const serie= r['FaturamentoNotaFiscal.serie'] || '';
+    const ano  = r['DataEmissao.ano'] || '';
+    const key  = `${id}|${serie}|${ano}|${idx}`;
+    const val  = parseFloat(r['FatoFaturamentoNotaFiscal.valorTotal']) || 0;
+    if (idx >= 1 && idx <= 12 && id && !notasVistas.has(key)) {
+      notasVistas.add(key);
       m[idx] = (m[idx] || 0) + val;
     }
   });
@@ -756,31 +761,39 @@ function procMensal(rows) {
 }
 
 // Processador para FatoFaturamentoProduto agrupado por mês (MRR/RCI/RSD/RLDU)
+// count >= 2 = linha com duplicação estrutural válida do cubo (nota existe em múltiplas empresas)
+// count = 1 = nota inconsistente — pertence a período/série diferente, não deve ser somada
+// Chave de deduplicação: idNotaFiscal + idProduto
 function procMensalCR(rows) {
+  const seen = new Set();
   const m = {};
   (rows || []).forEach(r => {
+    const cnt = parseInt(r['FatoFaturamentoProduto.count'] || 0);
+    if (cnt < 2) return; // ignora notas sem duplicação estrutural (inválidas)
     const idx = parseInt(r['DataEmissao.mes']);
-    if (idx >= 1 && idx <= 12) {
-      // Aceita tanto FatoFaturamentoProduto quanto FatoFinanceiroContaReceber
-      const val = parseFloat(r['FatoFaturamentoProduto.valorTotalSum'])
-               || parseFloat(r['FatoFinanceiroContaReceber.valorLiquidoSum'])
-               || 0;
-      m[idx] = (m[idx] || 0) + val;
+    const key = (r['FatoFaturamentoProduto.idNotaFiscal'] || '') + '|' + (r['FatoFaturamentoProduto.idProduto'] || '');
+    if (idx >= 1 && idx <= 12 && key && !seen.has(key)) {
+      seen.add(key);
+      m[idx] = (m[idx] || 0) + (parseFloat(r['FatoFaturamentoProduto.valorTotal']) || 0);
     }
   });
   return MESES.map((_, i) => m[i + 1] || 0);
 }
 
 function procPareto(rows) {
-  // Deduplica por idFaturamentoNotaFiscal antes de somar por cliente
+  // Chave: idFaturamentoNotaFiscal + serie + ano + mes
   const notasVistas = new Set();
   const map = {};
   (rows || []).forEach(r => {
     const id   = r['FatoFaturamentoNotaFiscal.idFaturamentoNotaFiscal'];
+    const serie= r['FaturamentoNotaFiscal.serie'] || '';
+    const ano  = r['DataEmissao.ano'] || '';
+    const mes  = r['DataEmissao.mes'] || '';
+    const key  = `${id}|${serie}|${ano}|${mes}`;
     const nome = r['VendaCliente.razaoSocial'] || 'Não identificado';
     const val  = parseFloat(r['FatoFaturamentoNotaFiscal.valorTotal']) || 0;
-    if (!id || notasVistas.has(id)) return;
-    notasVistas.add(id);
+    if (!id || notasVistas.has(key)) return;
+    notasVistas.add(key);
     if (!map[nome]) map[nome] = { nome, cidade: r['VendaCliente.descricaoCidade'] || '—', uf: r['VendaCliente.codigoEstado'] || '—', receita: 0 };
     map[nome].receita += val;
   });
@@ -788,11 +801,18 @@ function procPareto(rows) {
 }
 
 function procEstado(rows) {
-  const map = {};
+  // count >= 2 = linha válida; deduplicar por idNotaFiscal+idProduto
+  const seen = new Set();
+  const map  = {};
   (rows || []).forEach(r => {
+    const cnt  = parseInt(r['FatoFaturamentoProduto.count'] || 0);
+    if (cnt < 2) return;
+    const key  = (r['FatoFaturamentoProduto.idNotaFiscal']||'') + '|' + (r['FatoFaturamentoProduto.idProduto']||'');
+    if (seen.has(key)) return;
+    seen.add(key);
     const uf   = r['VendaCliente.codigoEstado']    || '??';
     const nome = r['VendaCliente.descricaoEstado'] || uf;
-    const val  = parseFloat(r['FatoFaturamentoProduto.valorTotalSum']) || 0;
+    const val  = parseFloat(r['FatoFaturamentoProduto.valorTotal']) || 0;
     if (!map[uf]) map[uf] = { uf, nome, receita: 0 };
     map[uf].receita += val;
   });
@@ -800,11 +820,18 @@ function procEstado(rows) {
 }
 
 function procCidade(rows) {
-  const map = {};
+  // count >= 2 = linha válida; deduplicar por idNotaFiscal+idProduto
+  const seen = new Set();
+  const map  = {};
   (rows || []).forEach(r => {
-    const k    = (r['VendaCliente.descricaoCidade'] || '—') + '|' + (r['VendaCliente.codigoEstado'] || '');
-    const val  = parseFloat(r['FatoFaturamentoProduto.valorTotalSum']) || 0;
-    const nome = (r['VendaCliente.descricaoCidade'] || '—') + (r['VendaCliente.codigoEstado'] ? ' / ' + r['VendaCliente.codigoEstado'] : '');
+    const cnt  = parseInt(r['FatoFaturamentoProduto.count'] || 0);
+    if (cnt < 2) return;
+    const key  = (r['FatoFaturamentoProduto.idNotaFiscal']||'') + '|' + (r['FatoFaturamentoProduto.idProduto']||'');
+    if (seen.has(key)) return;
+    seen.add(key);
+    const k    = (r['VendaCliente.descricaoCidade']||'—') + '|' + (r['VendaCliente.codigoEstado']||'');
+    const nome = (r['VendaCliente.descricaoCidade']||'—') + (r['VendaCliente.codigoEstado'] ? ' / '+r['VendaCliente.codigoEstado'] : '');
+    const val  = parseFloat(r['FatoFaturamentoProduto.valorTotal']) || 0;
     if (!map[k]) map[k] = { nome, receita: 0 };
     map[k].receita += val;
   });
@@ -819,36 +846,38 @@ function procRegioes(estados) {
 }
 
 function procParetoMRR(rows) {
-  const map = {};
+  // count >= 2 = linha com duplicação estrutural válida (nota existe em múltiplas empresas)
+  // count = 1 = nota de período/série diferente, não deve ser somada
+  const seen = new Set();
+  const map  = {};
   (rows || []).forEach(r => {
+    const cnt = parseInt(r['FatoFaturamentoProduto.count'] || 0);
+    if (cnt < 2) return;
+    const key = (r['FatoFaturamentoProduto.idNotaFiscal'] || '') + '|' + (r['FatoFaturamentoProduto.idProduto'] || '');
+    if (!key || seen.has(key)) return;
+    seen.add(key);
     const nome = r['VendaCliente.razaoSocial'] || 'Não identificado';
-    // Usa FatoFaturamentoProduto.valorTotalSum (faturamento emitido, não financeiro)
-    const val  = parseFloat(r['FatoFaturamentoProduto.valorTotalSum']) || 0;
+    const val  = parseFloat(r['FatoFaturamentoProduto.valorTotal']) || 0;
     if (val <= 0) return;
-    if (!map[nome]) map[nome] = {
-      nome,
-      cidade:  r['VendaCliente.descricaoCidade'] || '—',
-      uf:      r['VendaCliente.codigoEstado']    || '—',
-      receita: 0,
-    };
+    if (!map[nome]) map[nome] = { nome, cidade: r['VendaCliente.descricaoCidade']||'—', uf: r['VendaCliente.codigoEstado']||'—', receita: 0 };
     map[nome].receita += val;
   });
-  return Object.values(map)
-    .filter(c => c.receita > 0)
-    .sort((a,b) => b.receita - a.receita)
-    .slice(0, PARETO_N)
-    .map((c,i) => ({...c, rank: i+1}));
+  return Object.values(map).filter(c=>c.receita>0).sort((a,b)=>b.receita-a.receita).slice(0,PARETO_N).map((c,i)=>({...c,rank:i+1}));
 }
 
 function procClienteClasse(rows) {
-  // Deduplica por idFaturamentoNotaFiscal antes de contar por classe
+  // Chave: idFaturamentoNotaFiscal + serie + ano + mes
   const notasVistas = new Set();
   const map = {};
   (rows || []).forEach(r => {
     const id     = r['FatoFaturamentoNotaFiscal.idFaturamentoNotaFiscal'];
+    const serie  = r['FaturamentoNotaFiscal.serie'] || '';
+    const ano    = r['DataEmissao.ano'] || '';
+    const mes    = r['DataEmissao.mes'] || '';
+    const key    = `${id}|${serie}|${ano}|${mes}`;
     const classe = r['VendaCliente.descricaoClasse'] || 'Sem classificação';
-    if (!id || notasVistas.has(id)) return;
-    notasVistas.add(id);
+    if (!id || notasVistas.has(key)) return;
+    notasVistas.add(key);
     map[classe] = (map[classe] || 0) + 1;
   });
   return Object.entries(map)
