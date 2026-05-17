@@ -691,36 +691,13 @@ const Q = {
   }),
 
   // MRR mensal — FatoFaturamentoProduto + conta RSV Mensalidade (faturamento emitido)
-  mensalMRR: (ano) => ({
+  // Queries por mês individual — evita limite de 800 linhas da API ao buscar o ano inteiro
+  mensalPorMes: (mes, ano, conta) => ({
     measures:   ['FatoFaturamentoProduto.count'],
     dimensions: ['DataEmissao.mes','FatoFaturamentoProduto.idNotaFiscal','FatoFaturamentoProduto.idProduto','FatoFaturamentoProduto.valorTotal'],
-    filters:    filtersFAT('0', ano, CONTA_MRR),
+    filters:    filtersFAT(String(mes), ano, conta),
     order:      { 'DataEmissao.mes': 'asc' },
-    limit:      50000,
-  }),
-
-  mensalRCI: (ano) => ({
-    measures:   ['FatoFaturamentoProduto.count'],
-    dimensions: ['DataEmissao.mes','FatoFaturamentoProduto.idNotaFiscal','FatoFaturamentoProduto.idProduto','FatoFaturamentoProduto.valorTotal'],
-    filters:    filtersFAT('0', ano, CONTA_RCI),
-    order:      { 'DataEmissao.mes': 'asc' },
-    limit:      50000,
-  }),
-
-  mensalRSD: (ano) => ({
-    measures:   ['FatoFaturamentoProduto.count'],
-    dimensions: ['DataEmissao.mes','FatoFaturamentoProduto.idNotaFiscal','FatoFaturamentoProduto.idProduto','FatoFaturamentoProduto.valorTotal'],
-    filters:    filtersFAT('0', ano, CONTA_RSD),
-    order:      { 'DataEmissao.mes': 'asc' },
-    limit:      50000,
-  }),
-
-  mensalRLDU: (ano) => ({
-    measures:   ['FatoFaturamentoProduto.count'],
-    dimensions: ['DataEmissao.mes','FatoFaturamentoProduto.idNotaFiscal','FatoFaturamentoProduto.idProduto','FatoFaturamentoProduto.valorTotal'],
-    filters:    filtersFAT('0', ano, CONTA_RLDU),
-    order:      { 'DataEmissao.mes': 'asc' },
-    limit:      50000,
+    limit:      5000,
   }),
 
   // Clientes por classe — usar VendaCliente.descricaoClasse (join confirmado)
@@ -1257,13 +1234,27 @@ async function loadAll() {
     setOvMsg('Buscando faturamento mensal...');
     const rowsMensal = await cubeQuery(Q.mensal(ano));
 
-    setOvMsg('Buscando indicadores reais por conta gerencial...');
-    const [rowsMensalMRR, rowsMensalRCI, rowsMensalRSD, rowsMensalRLDU] = await Promise.all([
-      cubeQuery(Q.mensalMRR(ano)),
-      cubeQuery(Q.mensalRCI(ano)),
-      cubeQuery(Q.mensalRSD(ano)),
-      cubeQuery(Q.mensalRLDU(ano)),
+    setOvMsg('Buscando indicadores mensais...');
+    // Busca mês a mês para evitar o limite de 800 linhas da API ao buscar o ano inteiro
+    const mesesDoAno = [1,2,3,4,5,6,7,8,9,10,11,12];
+    const rowsMensalMRR  = [];
+    const rowsMensalRCI  = [];
+    const rowsMensalRSD  = [];
+    const rowsMensalRLDU = [];
+
+    // Busca todos os meses em paralelo por conta
+    const [resMRR, resRCI, resRSD, resRLDU] = await Promise.all([
+      Promise.all(mesesDoAno.map(m => cubeQuery(Q.mensalPorMes(m, ano, CONTA_MRR)))),
+      Promise.all(mesesDoAno.map(m => cubeQuery(Q.mensalPorMes(m, ano, CONTA_RCI)))),
+      Promise.all(mesesDoAno.map(m => cubeQuery(Q.mensalPorMes(m, ano, CONTA_RSD)))),
+      Promise.all(mesesDoAno.map(m => cubeQuery(Q.mensalPorMes(m, ano, CONTA_RLDU)))),
     ]);
+    // cubeQuery retorna d.data (array) — garantir que é sempre array antes do spread
+    const toArr = r => Array.isArray(r) ? r : [];
+    resMRR.forEach(r  => rowsMensalMRR.push(...toArr(r)));
+    resRCI.forEach(r  => rowsMensalRCI.push(...toArr(r)));
+    resRSD.forEach(r  => rowsMensalRSD.push(...toArr(r)));
+    resRLDU.forEach(r => rowsMensalRLDU.push(...toArr(r)));
 
     setOvMsg('Buscando clientes, geo e classes...');
     const [rowsPareto, rowsMRR, rowsEstado, rowsCidade, rowsClasse] = await Promise.all([
