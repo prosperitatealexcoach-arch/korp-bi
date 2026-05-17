@@ -949,7 +949,6 @@ function buildMensal(mensal, mensalMRR, mensalRCI, mensalRSD, mensalRLDU) {
   dc('cMensal');
   const ctx = document.getElementById('cMensal')?.getContext('2d');
   if (!ctx) return;
-  const t = total || 1;
   charts.cMensal = new Chart(ctx, {
     type: 'bar',
     data: { labels: MESES, datasets: [
