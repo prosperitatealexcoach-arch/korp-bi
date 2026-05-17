@@ -582,9 +582,14 @@ async function cubeQuery(cubeQ) {
     body:    JSON.stringify({ query: cubeQ }),
   });
   const d = await r.json();
-  if (d.error)       throw new Error(typeof d.error === 'object' ? JSON.stringify(d.error) : d.error);
-  if (!r.ok)         throw new Error(`HTTP ${r.status}`);
-  // Cube.js REST retorna { data: [...], annotation: {...} }
+  // Worker retorna {error: true, detail:...} para erros da API Cube.js
+  if (d.error === true) {
+    const msg = d.detail?.error || JSON.stringify(d.detail) || 'API error';
+    console.warn('[Korp BI] Query falhou:', msg, cubeQ);
+    return []; // retorna array vazio em vez de lançar exceção
+  }
+  if (d.error && typeof d.error === 'string') throw new Error(d.error);
+  if (!r.ok) throw new Error(`HTTP ${r.status}`);
   return d.data || d;
 }
 
@@ -747,10 +752,11 @@ const Q = {
   // Clientes por classe — usar VendaCliente.descricaoClasse (join confirmado)
   // Mapa completo de matrizes — ClienteMatriz standalone
   // codigo = código do cliente agrupador (matriz)
-  mapaMatriz: () => ({
+  mapaMatriz: (offset) => ({
     dimensions: ['ClienteMatriz.codigo','ClienteMatriz.razaoSocial'],
     measures:   ['ClienteMatriz.count'],
-    limit:      10000,
+    limit:      5000,
+    offset:     offset || 0,
   }),
 
   clienteClasse: (mes, ano) => ({
@@ -1330,7 +1336,9 @@ async function loadAll() {
 
     setOvMsg('Buscando mapa de grupos, clientes e geo...');
     const [rowsMapaMatriz, rowsPareto, rowsMRR, rowsEstado, rowsCidade, rowsClasse] = await Promise.all([
-      cubeQuery(Q.mapaMatriz()),
+      // Busca em duas páginas para cobrir todos os registros (4.813 total)
+      Promise.all([cubeQuery(Q.mapaMatriz(0)), cubeQuery(Q.mapaMatriz(5000))])
+        .then(([p1, p2]) => [...(p1||[]), ...(p2||[])]),
       cubeQuery(Q.pareto(mes, ano)),
       cubeQuery(Q.paretoMRR(mes, ano)),
       cubeQuery(Q.estado(mes, ano)),
