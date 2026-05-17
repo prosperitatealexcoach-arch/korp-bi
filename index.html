@@ -765,13 +765,16 @@ function procMensal(rows) {
 // count = 1 = nota inconsistente — pertence a período/série diferente, não deve ser somada
 // Chave de deduplicação: idNotaFiscal + idProduto
 function procMensalCR(rows) {
+  // Deduplicação por idNotaFiscal+idProduto por mês
+  // Não usa cnt<2 aqui pois o count varia conforme o agrupamento da query
+  // A deduplicação pelo Set já evita dupla contagem da mesma nota no mesmo mês
   const seen = new Set();
   const m = {};
   (rows || []).forEach(r => {
-    const cnt = parseInt(r['FatoFaturamentoProduto.count'] || 0);
-    if (cnt < 2) return; // ignora notas sem duplicação estrutural (inválidas)
     const idx = parseInt(r['DataEmissao.mes']);
-    const key = (r['FatoFaturamentoProduto.idNotaFiscal'] || '') + '|' + (r['FatoFaturamentoProduto.idProduto'] || '');
+    const key = (r['FatoFaturamentoProduto.idNotaFiscal'] || '') + '|'
+              + (r['FatoFaturamentoProduto.idProduto']    || '') + '|'
+              + idx; // inclui mês na key para notas do mesmo id em meses diferentes
     if (idx >= 1 && idx <= 12 && key && !seen.has(key)) {
       seen.add(key);
       m[idx] = (m[idx] || 0) + (parseFloat(r['FatoFaturamentoProduto.valorTotal']) || 0);
