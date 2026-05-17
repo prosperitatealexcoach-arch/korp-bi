@@ -546,6 +546,29 @@ const MESES_FULL = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho
 const REGIOES    = {Sul:['PR','SC','RS'],Sudeste:['SP','RJ','MG','ES'],'Centro-Oeste':['MT','MS','GO','DF'],Norte:['AM','PA','RO','RR','AC','AP','TO'],Nordeste:['BA','SE','AL','PE','PB','RN','CE','PI','MA']};
 const PARETO_N   = 10;
 
+// ── MAPA DE GRUPOS DE CLIENTES ────────────────────────────────────────
+// ClienteMatriz standalone: codigo = código do cliente agrupador (matriz)
+// Se VendaCliente.codigo bate com ClienteMatriz.codigo → é uma matriz
+// Filiais do mesmo grupo compartilham o código da matriz via regra de negócio
+let MAPA_GRUPO = {}; // { codigoCliente: nomeMatriz } — populado no loadAll
+
+function buildMapaGrupo(rows) {
+  const mapa = {};
+  (rows || []).forEach(r => {
+    const cod  = String(r['ClienteMatriz.codigo'] || '').trim();
+    const nome = r['ClienteMatriz.razaoSocial'] || '';
+    if (cod) mapa[cod] = nome;
+  });
+  return mapa;
+}
+
+// Retorna o nome do grupo para um código de cliente
+// Se o código está no mapa → é uma matriz → retorna o nome dela
+// Caso contrário → cliente individual sem agrupamento
+function resolveGrupo(codigoCliente) {
+  return MAPA_GRUPO[String(codigoCliente || '').trim()] || null;
+}
+
 // ── FORMATADORES ───────────────────────────────────────────
 function fmt(v)     { if(!v||isNaN(v))return'—'; if(v>=1e6)return'R$ '+(v/1e6).toFixed(2).replace('.',',')+'M'; if(v>=1e3)return'R$ '+(v/1e3).toFixed(1).replace('.',',')+'K'; return'R$ '+Math.round(v).toLocaleString('pt-BR'); }
 function fmtFull(v) { if(!v||isNaN(v))return'—'; return'R$ '+Math.round(v).toLocaleString('pt-BR'); }
@@ -649,6 +672,7 @@ const Q = {
       'DataEmissao.ano',
       'DataEmissao.mes',
       'FatoFaturamentoNotaFiscal.valorTotal',
+      'VendaCliente.codigo',
       'VendaCliente.razaoSocial',
       'VendaCliente.codigoEstado',
       'VendaCliente.descricaoEstado',
@@ -661,19 +685,35 @@ const Q = {
 
   // Por estado
   estado: (mes, ano) => ({
-    measures:   ['FatoFaturamentoProduto.count'],
-    dimensions: ['FatoFaturamentoProduto.idNotaFiscal','FatoFaturamentoProduto.idProduto','FatoFaturamentoProduto.valorTotal','VendaCliente.codigoEstado','VendaCliente.descricaoEstado'],
-    filters: filtersProd(mes, ano),
-    limit:   50000,
-    order:   { 'FatoFaturamentoProduto.valorTotal': 'desc' },
+    measures:   ['FatoFaturamentoNotaFiscal.count'],
+    dimensions: [
+      'FatoFaturamentoNotaFiscal.idFaturamentoNotaFiscal',
+      'FaturamentoNotaFiscal.serie',
+      'DataEmissao.ano',
+      'DataEmissao.mes',
+      'FatoFaturamentoNotaFiscal.valorTotal',
+      'VendaCliente.codigoEstado',
+      'VendaCliente.descricaoEstado',
+    ],
+    filters: filtersNF(mes, ano),
+    limit:   10000,
+    order:   { 'FatoFaturamentoNotaFiscal.valorTotal': 'desc' },
   }),
 
   cidade: (mes, ano) => ({
-    measures:   ['FatoFaturamentoProduto.count'],
-    dimensions: ['FatoFaturamentoProduto.idNotaFiscal','FatoFaturamentoProduto.idProduto','FatoFaturamentoProduto.valorTotal','VendaCliente.descricaoCidade','VendaCliente.codigoEstado'],
-    filters: filtersProd(mes, ano),
-    limit:   50000,
-    order:   { 'FatoFaturamentoProduto.valorTotal': 'desc' },
+    measures:   ['FatoFaturamentoNotaFiscal.count'],
+    dimensions: [
+      'FatoFaturamentoNotaFiscal.idFaturamentoNotaFiscal',
+      'FaturamentoNotaFiscal.serie',
+      'DataEmissao.ano',
+      'DataEmissao.mes',
+      'FatoFaturamentoNotaFiscal.valorTotal',
+      'VendaCliente.descricaoCidade',
+      'VendaCliente.codigoEstado',
+    ],
+    filters: filtersNF(mes, ano),
+    limit:   10000,
+    order:   { 'FatoFaturamentoNotaFiscal.valorTotal': 'desc' },
   }),
 
   // Pareto MRR — FatoFaturamentoProduto + conta RSV Mensalidade (faturamento emitido)
@@ -683,6 +723,7 @@ const Q = {
       'FatoFaturamentoProduto.idNotaFiscal',
       'FatoFaturamentoProduto.idProduto',
       'FatoFaturamentoProduto.valorTotal',
+      'VendaCliente.codigo',
       'VendaCliente.razaoSocial',
       'VendaCliente.codigoEstado',
       'VendaCliente.descricaoEstado',
@@ -704,6 +745,14 @@ const Q = {
   }),
 
   // Clientes por classe — usar VendaCliente.descricaoClasse (join confirmado)
+  // Mapa completo de matrizes — ClienteMatriz standalone
+  // codigo = código do cliente agrupador (matriz)
+  mapaMatriz: () => ({
+    dimensions: ['ClienteMatriz.codigo','ClienteMatriz.razaoSocial'],
+    measures:   ['ClienteMatriz.count'],
+    limit:      10000,
+  }),
+
   clienteClasse: (mes, ano) => ({
     measures:   ['FatoFaturamentoNotaFiscal.count'],
     dimensions: [
@@ -765,6 +814,7 @@ function procMensalCR(rows) {
 
 function procPareto(rows) {
   // Chave: idFaturamentoNotaFiscal + serie + ano + mes
+  // Agrupamento: se VendaCliente.codigo está no MAPA_GRUPO → agrupa pelo nome da matriz
   const notasVistas = new Set();
   const map = {};
   (rows || []).forEach(r => {
@@ -773,29 +823,39 @@ function procPareto(rows) {
     const ano  = r['DataEmissao.ano'] || '';
     const mes  = r['DataEmissao.mes'] || '';
     const key  = `${id}|${serie}|${ano}|${mes}`;
-    const nome = r['VendaCliente.razaoSocial'] || 'Não identificado';
-    const val  = parseFloat(r['FatoFaturamentoNotaFiscal.valorTotal']) || 0;
     if (!id || notasVistas.has(key)) return;
     notasVistas.add(key);
-    if (!map[nome]) map[nome] = { nome, cidade: r['VendaCliente.descricaoCidade'] || '—', uf: r['VendaCliente.codigoEstado'] || '—', receita: 0 };
+    const cod   = r['VendaCliente.codigo'] || '';
+    const grupo = resolveGrupo(cod);
+    const nome  = grupo || r['VendaCliente.razaoSocial'] || 'Não identificado';
+    const val   = parseFloat(r['FatoFaturamentoNotaFiscal.valorTotal']) || 0;
+    if (!map[nome]) map[nome] = {
+      nome,
+      cidade: r['VendaCliente.descricaoCidade'] || '—',
+      uf:     r['VendaCliente.codigoEstado']    || '—',
+      receita: 0,
+      agrupado: !!grupo,
+    };
     map[nome].receita += val;
   });
   return Object.values(map).filter(c => c.receita > 0).sort((a, b) => b.receita - a.receita).slice(0, PARETO_N).map((c, i) => ({ ...c, rank: i + 1 }));
 }
 
 function procEstado(rows) {
-  // count >= 2 = linha válida; deduplicar por idNotaFiscal+idProduto
+  // Mesma chave do procPareto: idFaturamentoNotaFiscal + serie + ano + mes
   const seen = new Set();
   const map  = {};
   (rows || []).forEach(r => {
-    const cnt  = parseInt(r['FatoFaturamentoProduto.count'] || 0);
-    if (cnt < 2) return;
-    const key  = (r['FatoFaturamentoProduto.idNotaFiscal']||'') + '|' + (r['FatoFaturamentoProduto.idProduto']||'');
-    if (seen.has(key)) return;
+    const id   = r['FatoFaturamentoNotaFiscal.idFaturamentoNotaFiscal'] || '';
+    const serie= r['FaturamentoNotaFiscal.serie'] || '';
+    const ano  = r['DataEmissao.ano'] || '';
+    const mes  = r['DataEmissao.mes'] || '';
+    const key  = `${id}|${serie}|${ano}|${mes}`;
+    if (!id || seen.has(key)) return;
     seen.add(key);
     const uf   = r['VendaCliente.codigoEstado']    || '??';
     const nome = r['VendaCliente.descricaoEstado'] || uf;
-    const val  = parseFloat(r['FatoFaturamentoProduto.valorTotal']) || 0;
+    const val  = parseFloat(r['FatoFaturamentoNotaFiscal.valorTotal']) || 0;
     if (!map[uf]) map[uf] = { uf, nome, receita: 0 };
     map[uf].receita += val;
   });
@@ -803,18 +863,20 @@ function procEstado(rows) {
 }
 
 function procCidade(rows) {
-  // count >= 2 = linha válida; deduplicar por idNotaFiscal+idProduto
+  // Mesma chave do procPareto: idFaturamentoNotaFiscal + serie + ano + mes
   const seen = new Set();
   const map  = {};
   (rows || []).forEach(r => {
-    const cnt  = parseInt(r['FatoFaturamentoProduto.count'] || 0);
-    if (cnt < 2) return;
-    const key  = (r['FatoFaturamentoProduto.idNotaFiscal']||'') + '|' + (r['FatoFaturamentoProduto.idProduto']||'');
-    if (seen.has(key)) return;
+    const id   = r['FatoFaturamentoNotaFiscal.idFaturamentoNotaFiscal'] || '';
+    const serie= r['FaturamentoNotaFiscal.serie'] || '';
+    const ano  = r['DataEmissao.ano'] || '';
+    const mes  = r['DataEmissao.mes'] || '';
+    const key  = `${id}|${serie}|${ano}|${mes}`;
+    if (!id || seen.has(key)) return;
     seen.add(key);
     const k    = (r['VendaCliente.descricaoCidade']||'—') + '|' + (r['VendaCliente.codigoEstado']||'');
     const nome = (r['VendaCliente.descricaoCidade']||'—') + (r['VendaCliente.codigoEstado'] ? ' / '+r['VendaCliente.codigoEstado'] : '');
-    const val  = parseFloat(r['FatoFaturamentoProduto.valorTotal']) || 0;
+    const val  = parseFloat(r['FatoFaturamentoNotaFiscal.valorTotal']) || 0;
     if (!map[k]) map[k] = { nome, receita: 0 };
     map[k].receita += val;
   });
@@ -829,7 +891,8 @@ function procRegioes(estados) {
 }
 
 function procParetoMRR(rows) {
-  // Deduplicação por idNotaFiscal + idProduto — mesma lógica do procMensalCR
+  // Deduplicação por idNotaFiscal + idProduto
+  // Agrupamento: se VendaCliente.codigo está no MAPA_GRUPO → agrupa pelo nome da matriz
   const seen = new Set();
   const map  = {};
   (rows || []).forEach(r => {
@@ -838,10 +901,18 @@ function procParetoMRR(rows) {
     const key   = idNF + '|' + idProd;
     if (!idNF || seen.has(key)) return;
     seen.add(key);
-    const nome = r['VendaCliente.razaoSocial'] || 'Não identificado';
-    const val  = parseFloat(r['FatoFaturamentoProduto.valorTotal']) || 0;
+    const cod   = r['VendaCliente.codigo'] || '';
+    const grupo = resolveGrupo(cod);
+    const nome  = grupo || r['VendaCliente.razaoSocial'] || 'Não identificado';
+    const val   = parseFloat(r['FatoFaturamentoProduto.valorTotal']) || 0;
     if (val <= 0) return;
-    if (!map[nome]) map[nome] = { nome, cidade: r['VendaCliente.descricaoCidade']||'—', uf: r['VendaCliente.codigoEstado']||'—', receita: 0 };
+    if (!map[nome]) map[nome] = {
+      nome,
+      cidade:  r['VendaCliente.descricaoCidade'] || '—',
+      uf:      r['VendaCliente.codigoEstado']    || '—',
+      receita: 0,
+      agrupado: !!grupo,
+    };
     map[nome].receita += val;
   });
   return Object.values(map).filter(c=>c.receita>0).sort((a,b)=>b.receita-a.receita).slice(0,PARETO_N).map((c,i)=>({...c,rank:i+1}));
@@ -1257,8 +1328,9 @@ async function loadAll() {
     resRSD.forEach(r  => rowsMensalRSD.push(...toArr(r)));
     resRLDU.forEach(r => rowsMensalRLDU.push(...toArr(r)));
 
-    setOvMsg('Buscando clientes, geo e classes...');
-    const [rowsPareto, rowsMRR, rowsEstado, rowsCidade, rowsClasse] = await Promise.all([
+    setOvMsg('Buscando mapa de grupos, clientes e geo...');
+    const [rowsMapaMatriz, rowsPareto, rowsMRR, rowsEstado, rowsCidade, rowsClasse] = await Promise.all([
+      cubeQuery(Q.mapaMatriz()),
       cubeQuery(Q.pareto(mes, ano)),
       cubeQuery(Q.paretoMRR(mes, ano)),
       cubeQuery(Q.estado(mes, ano)),
@@ -1267,6 +1339,9 @@ async function loadAll() {
     ]);
 
     setOvMsg('Processando...');
+    // Popular mapa global de grupos antes de processar os paretos
+    MAPA_GRUPO = buildMapaGrupo(rowsMapaMatriz);
+
     const mensal        = procMensal(rowsMensal);
     const mensalMRR     = procMensalCR(rowsMensalMRR);
     const mensalRCI     = procMensalCR(rowsMensalRCI);
