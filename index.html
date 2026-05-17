@@ -678,16 +678,19 @@ const Q = {
 
   // Pareto MRR — FatoFaturamentoProduto + conta RSV Mensalidade (faturamento emitido)
   paretoMRR: (mes, ano) => ({
-    measures:   ['FatoFaturamentoProduto.valorTotalSum'],
+    measures:   ['FatoFaturamentoProduto.count'],
     dimensions: [
+      'FatoFaturamentoProduto.idNotaFiscal',
+      'FatoFaturamentoProduto.idProduto',
+      'FatoFaturamentoProduto.valorTotal',
       'VendaCliente.razaoSocial',
       'VendaCliente.codigoEstado',
       'VendaCliente.descricaoEstado',
       'VendaCliente.descricaoCidade',
     ],
     filters: filtersFAT(mes, ano, CONTA_MRR),
-    limit:   50,
-    order:   { 'FatoFaturamentoProduto.valorTotalSum': 'desc' },
+    limit:   5000,
+    order:   { 'FatoFaturamentoProduto.valorTotal': 'desc' },
   }),
 
   // MRR mensal — FatoFaturamentoProduto + conta RSV Mensalidade (faturamento emitido)
@@ -826,15 +829,14 @@ function procRegioes(estados) {
 }
 
 function procParetoMRR(rows) {
-  // count >= 2 = linha com duplicação estrutural válida (nota existe em múltiplas empresas)
-  // count = 1 = nota de período/série diferente, não deve ser somada
+  // Deduplicação por idNotaFiscal + idProduto — mesma lógica do procMensalCR
   const seen = new Set();
   const map  = {};
   (rows || []).forEach(r => {
-    const cnt = parseInt(r['FatoFaturamentoProduto.count'] || 0);
-    if (cnt < 2) return;
-    const key = (r['FatoFaturamentoProduto.idNotaFiscal'] || '') + '|' + (r['FatoFaturamentoProduto.idProduto'] || '');
-    if (!key || seen.has(key)) return;
+    const idNF  = r['FatoFaturamentoProduto.idNotaFiscal']  || '';
+    const idProd= r['FatoFaturamentoProduto.idProduto']     || '';
+    const key   = idNF + '|' + idProd;
+    if (!idNF || seen.has(key)) return;
     seen.add(key);
     const nome = r['VendaCliente.razaoSocial'] || 'Não identificado';
     const val  = parseFloat(r['FatoFaturamentoProduto.valorTotal']) || 0;
